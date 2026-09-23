@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MediLink — Hospital Records &amp; Intelligent Referral System</title>
+<style>
+:root{
+  --bg:#0d1420; --bg2:#111b2b; --card:#152238; --card2:#1a2a44;
+--line:#243553; --txt:#e8eefc; --mut:#93a4c4;
+  --brand:#19c3a3; --brand2:#2f7bff; --warn:#ff9f43; --dang:#ff5468; --high:#ff7fa8;
+  --ok:#28d07f; --r:14px; --sh:0 10px 30px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 600px at 80% -10%,#17304d 0%,transparent 60%),var(--bg);
+ color:var(--txt);font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+a{color:inherit}
+.app{display:flex;min-height:100vh}
+/* Sidebar */
+.side{width:250px;flex:0 0 250px;background:linear-gradient(180deg,#101a2b,#0c1422);border-right:1px solid var(--line);
+ padding:16px 12px;position:sticky;top:0;height:100vh;overflow:auto}
+.brand{display:flex;gap:10px;align-items:center;padding:8px 10px 16px}
+.brand .logo{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--brand),var(--brand2));
+ display:grid;place-items:center;font-size:20px}
+.brand b{font-size:16px;letter-spacing:.3px}
+.brand small{display:block;color:var(--mut);font-size:11px}
+.nav a{display:flex;gap:10px;align-items:center;padding:9px 12px;border-radius:10px;color:var(--mut);
+ text-decoration:none;font-size:14px;margin-bottom:2px;transition:.18s;cursor:pointer}
+.nav a:hover{background:#18273f;color:var(--txt);transform:translateX(3px)}
+.nav a.on{background:linear-gradient(90deg,rgba(25,195,163,.22),rgba(47,123,255,.12));color:#fff;
+ box-shadow:inset 3px 0 0 var(--brand)}
+.nav .grp{font-size:10px;letter-spacing:1.4px;color:#5d7096;padding:14px 12px 6px;text-transform:uppercase}
+/* Main */
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.top{display:flex;gap:14px;align-items:center;padding:12px 20px;background:rgba(14,22,36,.86);
+ backdrop-filter:blur(10px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30}
+.search{flex:1;max-width:460px;position:relative}
+.search input{width:100%;padding:10px 14px 10px 36px;border-radius:12px;border:1px solid var(--line);
+ background:#0f1a2b;color:var(--txt);outline:none}
+.search input:focus{border-color:var(--brand)}
+.search span{position:absolute;left:11px;top:9px;opacity:.6}
+.tbtn{position:relative;width:38px;height:38px;border-radius:11px;border:1px solid var(--line);background:#101c2e;
+ display:grid;place-items:center;cursor:pointer}
+.dot{position:absolute;top:6px;right:7px;width:8px;height:8px;border-radius:50%;background:var(--dang)}
+.who{display:flex;gap:9px;align-items:center;padding:5px 10px;border:1px solid var(--line);border-radius:12px;background:#101c2e}
+.who .av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--brand2),var(--brand));display:grid;place-items:center;font-size:12px;font-weight:700}
+.emg{padding:8px 12px;border-radius:11px;background:rgba(255,84,104,.14);border:1px solid rgba(255,84,104,.5);
+ color:#ffb3bd;font-size:12px;font-weight:600;animation:pulse 2s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 6px rgba(255,84,104,.07)}}
+.wrap{padding:22px;max-width:1400px;width:100%}
+h1.page{font-size:24px;margin:0 0 4px}
+p.sub{color:var(--mut);margin:0 0 18px;font-size:13px}
+/* Cards */
+.grid{display:grid;gap:14px}
+.g6{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(290px,1fr))}
+.g2{grid-template-columns:repeat(auto-fit,minmax(380px,1fr))}
+.card{background:linear-gradient(160deg,var(--card),var(--card2));border:1px solid var(--line);
+ border-radius:var(--r);padding:16px;box-shadow:var(--sh)}
+.stat{position:relative;overflow:hidden;transition:.2s}
+.stat:hover{transform:translateY(-4px);border-color:rgba(25,195,163,.5)}
+.stat .ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:19px;background:#0f1c2e;margin-bottom:10px}
+.stat .v{font-size:30px;font-weight:700;line-height:1}
+.stat .l{color:var(--mut);font-size:12px;margin-top:6px}
+.h{font-size:15px;font-weight:700;margin:0 0 12px;display:flex;justify-content:space-between;align-items:center}
+/* Controls */
+.btn{padding:9px 14px;border-radius:10px;border:1px solid transparent;font-size:13px;font-weight:600;cursor:pointer;
+ background:linear-gradient(135deg,var(--brand),#12a58a);color:#04241d;transition:.18s}
+.btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn.o{background:transparent;border-color:var(--line);color:var(--txt)}
+.btn.b{background:linear-gradient(135deg,var(--brand2),#1b5fd6);color:#fff}
+.btn.r{background:linear-gradient(135deg,var(--dang),#d63a4c);color:#fff}
+.btn.s{padding:6px 10px;font-size:12px}
+input,select,textarea{width:100%;padding:9px 11px;border-radius:10px;border:1px solid var(--line);background:#0f1a2b;color:var(--txt);font-family:inherit;font-size:13px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--brand)}
+label{font-size:11px;color:var(--mut);display:block;margin:0 0 5px;letter-spacing:.4px;text-transform:uppercase}
+.field{margin-bottom:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.6px;padding:8px;border-bottom:1px solid var(--line)}
+td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.05)}
+tr:hover td{background:rgba(255,255,255,.03)}
+.tag{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700}
+.t-low{background:rgba(40,208,127,.16);color:#6ff0b4}
+.t-med{background:rgba(255,159,67,.16);color:#ffc689}
+.t-high{background:rgba(255,127,168,.16);color:#ffb4cd}
+.t-crit{background:rgba(255,84,104,.2);color:#ff98a5}
+.t-info{background:rgba(47,123,255,.16);color:#9ec1ff}
+.t-ok{background:rgba(25,195,163,.16);color:#7fead6}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tabs button{padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:#101c2e;color:var(--mut);cursor:pointer;font-size:13px}
+.tabs button.on{background:linear-gradient(135deg,var(--brand),#12a58a);color:#04241d;border-color:transparent;font-weight:700}
+/* timeline */
+.tl{position:relative;padding-left:26px}
+.tl:before{content:"";position:absolute;left:8px;top:4px;bottom:4px;width:2px;background:linear-gradient(var(--brand),var(--brand2))}
+.tl .it{position:relative;margin-bottom:14px}
+.tl .it:before{content:"";position:absolute;left:-23px;top:5px;width:11px;height:11px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 3px rgba(25,195,163,.18)}
+.tl .d{font-size:11px;color:var(--mut)}
+.bar{height:9px;border-radius:9px;background:#0f1a2b;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,var(--brand),var(--brand2))}
+.alert{border-radius:12px;padding:14px;margin:12px 0;border:1px solid}
+.a-red{background:rgba(255,84,104,.12);border-color:rgba(255,84,104,.55)}
+.a-org{background:rgba(255,159,67,.1);border-color:rgba(255,159,67,.5)}
+.a-grn{background:rgba(40,208,127,.1);border-color:rgba(40,208,127,.45)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:8px 13px;border-radius:999px;border:1px solid var(--line);background:#101c2e;cursor:pointer;font-size:13px;transition:.15s}
+.chip:hover{border-color:var(--brand)}
+.chip.on{background:linear-gradient(135deg,var(--brand),#12a58a);color:#04241d;font-weight:700;border-color:transparent}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed rgba(255,255,255,.07);font-size:13px}
+.kv span{color:var(--mut)}
+.modal{position:fixed;inset:0;background:rgba(4,8,16,.7);display:none;place-items:center;z-index:99;padding:20px}
+.modal.on{display:grid}
+.modal .box{background:var(--card);border:1px solid var(--line);border-radius:16px;max-width:760px;width:100%;max-height:86vh;overflow:auto;padding:20px;box-shadow:var(--sh)}
+.toast{position:fixed;right:20px;bottom:20px;background:var(--card2);border:1px solid var(--brand);padding:13px 18px;border-radius:12px;z-index:200;box-shadow:var(--sh);transform:translateY(120%);transition:.3s}
+.toast.on{transform:none}
+.mini{font-size:11px;color:var(--mut)}
+.hide{display:none}
+.burger{display:none}
+@media(max-width:900px){
+ .side{position:fixed;left:0;top:0;z-index:60;transform:translateX(-100%);transition:.25s}
+ .side.open{transform:none}
+ .burger{display:grid}
+ .wrap{padding:14px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side" id="side">
+    <div class="brand">
+      <div class="logo">🏥</div>
+      <div><b>MediLink</b><small>Records &amp; Referral System</small></div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <div class="tbtn burger" onclick="document.getElementById('side').classList.toggle('open')">☰</div>
+      <div class="search">
+        <span>🔍</span>
+        <input id="gsearch" placeholder="Search patient ID, name, phone, doctor, department…" oninput="globalSearch(this.value)" />
+      </div>
+      <div class="emg" id="emgInd">🚨 Emergency: <b id="emgCount">0</b></div>
+      <div class="mini" id="today"></div>
+      <div class="tbtn" onclick="showNotifs()">🔔<i class="dot"></i></div>
+      <div class="who"><div class="av">HS</div><div><div style="font-size:12px;font-weight:600">Staff Console</div><div class="mini">Front Desk · Admin</div></div></div>
+    </header>
+    <div class="wrap" id="view"></div>
+  </div>
+</div>
+
+<div class="modal" id="modal" onclick="if(event.target===this)closeModal()"><div class="box" id="modalBox"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   MediLink — single-file hospital records & referral prototype
+   Storage: localStorage (key: medilink_v1)
+   ============================================================ */
+const KEY='medilink_v1';
+const DEPTS=[
+ {id:'D1',name:'General Medicine',icon:'🩺',desc:'First point of contact, undifferentiated symptoms'},
+ {id:'D2',name:'Cardiology',icon:'❤️',desc:'Heart and circulation'},
+ {id:'D3',name:'Neurology',icon:'🧠',desc:'Brain, spine and nerves'},
+ {id:'D4',name:'Orthopedics',icon:'🦴',desc:'Bones, joints, muscles'},
+ {id:'D5',name:'Pediatrics',icon:'🧒',desc:'Child health'},
+ {id:'D6',name:'Dermatology',icon:'🧴',desc:'Skin, hair and nails'},
+ {id:'D7',name:'ENT',icon:'👂',desc:'Ear, nose and throat'},
+ {id:'D8',name:'Gynecology',icon:'👩‍⚕️',desc:'Women’s health'}
+];
+const DOCTORS=[
+ {id:'DR01',name:'Dr. Anil Kumar',dept:'Orthopedics',exp:8,slots:['10:30 AM','04:00 PM']},
+ {id:'DR02',name:'Dr. Priya Nair',dept:'Orthopedics',exp:6,slots:['02:00 PM','05:30 PM']},
+ {id:'DR03',name:'Dr. Ramesh Rao',dept:'Cardiology',exp:14,slots:['09:00 AM','01:00 PM']},
+ {id:'DR04',name:'Dr. Sneha Iyer',dept:'Cardiology',exp:7,slots:['11:00 AM','03:30 PM']},
+ {id:'DR05',name:'Dr. Vikram Sen',dept:'Neurology',exp:11,slots:['10:00 AM','04:30 PM']},
+ {id:'DR06',name:'Dr. Meera Joshi',dept:'General Medicine',exp:9,slots:['09:30 AM','12:30 PM']},
+ {id:'DR07',name:'Dr. Arjun Das',dept:'General Medicine',exp:4,slots:['02:30 PM','06:00 PM']},
+ {id:'DR08',name:'Dr. Kavya Reddy',dept:'Pediatrics',exp:10,slots:['10:15 AM','03:00 PM']},
+ {id:'DR09',name:'Dr. Imran Shaikh',dept:'Dermatology',exp:5,slots:['11:30 AM','05:00 PM']},
+ {id:'DR10',name:'Dr. Leela Menon',dept:'ENT',exp:12,slots:['09:45 AM','02:45 PM']},
+ {id:'DR11',name:'Dr. Sarita Bose',dept:'Gynecology',exp:13,slots:['10:45 AM','04:15 PM']}
+];
+const today=()=>new Date().toISOString().slice(0,10);
+const dAgo=n=>new Date(Date.now()-n*864e5).toISOString().slice(0,10);
+const uid=p=>p+Math.random().toString(36).slice(2,7).toUpperCase();
+
+let DB=load();
+function load(){
+  const raw=localStorage.getItem(KEY);
+  if(raw){try{return JSON.parse(raw)}catch(e){}}
+  const db=seed(); localStorage.setItem(KEY,JSON.stringify(db)); return db;
+}
+function save(){localStorage.setItem(KEY,JSON.stringify(DB))}
+function reset(){if(confirm('Reset all demo data?')){localStorage.removeItem(KEY);DB=load();go(location.hash||'#dashboard');toast('Demo data reset')}}
+
+function seed(){
+ const P=[
+  {pid:'PT1001',name:'Ravi Sharma',age:54,gender:'Male',phone:'9876543210',email:'ravi@mail.com',address:'12 MG Road, Hyderabad',blood:'B+',ec:'9876500000',allergies:'Penicillin',conditions:'Hypertension, Type 2 Diabetes',symptoms:'Chest tightness while walking',admissions:'2 (2024, 2025)',surgeries:'Appendectomy 2019',meds:'Metformin, Amlodipine',pref:'Cardiology',created:dAgo(40)},
+  {pid:'PT1002',name:'Anita Verma',age:32,gender:'Female',phone:'9812345678',email:'anita@mail.com',address:'7 Lake View, Pune',blood:'O+',ec:'9812300000',allergies:'None',conditions:'Migraine',symptoms:'Numbness in left arm, tingling',admissions:'0',surgeries:'None',meds:'Sumatriptan',pref:'Neurology',created:dAgo(25)},
+  {pid:'PT1003',name:'Imran Qureshi',age:41,gender:'Male',phone:'9900112233',email:'imran@mail.com',address:'45 Park Street, Kolkata',blood:'A-',ec:'9900100000',allergies:'Dust',conditions:'Old knee injury',symptoms:'Right knee pain with swelling',admissions:'1 (2023)',surgeries:'ACL repair 2023',meds:'Ibuprofen as needed',pref:'Orthopedics',created:dAgo(12)},
+  {pid:'PT1004',name:'Sunita Patil',age:27,gender:'Female',phone:'9765432109',email:'sunita@mail.com',address:'9 Green Villa, Nagpur',blood:'AB+',ec:'9765400000',allergies:'Sulfa drugs',conditions:'Eczema',symptoms:'Itchy rash on forearms',admissions:'0',surgeries:'None',meds:'Topical steroid',pref:'Dermatology',created:dAgo(6)},
+  {pid:'PT1005',name:'Master Aarav Gupta',age:7,gender:'Male',phone:'9345678901',email:'gupta@mail.com',address:'21 Rose Lane, Delhi',blood:'B-',ec:'9345600000',allergies:'Peanuts',conditions:'Asthma',symptoms:'Recurrent fever and cough',admissions:'3 (2024-2026)',surgeries:'None',meds:'Salbutamol inhaler',pref:'Pediatrics',created:dAgo(3)}
+ ];
+ const H=[
+  {id:uid('H'),pid:'PT1001',date:dAgo(38),dept:'General Medicine',doctor:'Dr. Meera Joshi',complaint:'Fatigue and breathlessness',notes:'ECG advised, BP elevated',referral:'Yes → Cardiology',report:'ECG'},
+  {id:uid('H'),pid:'PT1001',date:dAgo(20),dept:'Cardiology',doctor:'Dr. Ramesh Rao',complaint:'Chest tightness on exertion',notes:'Started on antihypertensive, stress test advised',referral:'-',report:'Blood Test'},
+  {id:uid('H'),pid:'PT1002',date:dAgo(24),dept:'General Medicine',doctor:'Dr. Arjun Das',complaint:'Headache with arm tingling',notes:'Neuro consult advised',referral:'Yes → Neurology',report:'-'},
+  {id:uid('H'),pid:'PT1003',date:dAgo(11),dept:'Orthopedics',doctor:'Dr. Anil Kumar',complaint:'Knee pain after climbing stairs',notes:'Physiotherapy + MRI advised',referral:'-',report:'MRI'},
+  {id:uid('H'),pid:'PT1005',date:dAgo(2),dept:'Pediatrics',doctor:'Dr. Kavya Reddy',complaint:'Fever 3 days',notes:'Antipyretics, review in 48h',referral:'-',report:'Blood Test'}
+ ];
+ const A=[
+  {id:uid('AP'),pid:'PT1001',doctor:'Dr. Ramesh Rao',dept:'Cardiology',date:today(),time:'09:00 AM',reason:'Stress test review',priority:'High',status:'Scheduled'},
+  {id:uid('AP'),pid:'PT1003',doctor:'Dr. Anil Kumar',dept:'Orthopedics',date:today(),time:'10:30 AM',reason:'MRI report review',priority:'Normal',status:'Scheduled'},
+  {id:uid('AP'),pid:'PT1005',doctor:'Dr. Kavya Reddy',dept:'Pediatrics',date:today(),time:'03:00 PM',reason:'Fever follow-up',priority:'Normal',status:'Follow-up'},
+  {id:uid('AP'),pid:'PT1002',doctor:'Dr. Vikram Sen',dept:'Neurology',date:dAgo(-2),time:'10:00 AM',reason:'Numbness evaluation',priority:'Normal',status:'Scheduled'},
+  {id:uid('AP'),pid:'PT1004',doctor:'Dr. Imran Shaikh',dept:'Dermatology',date:dAgo(4),time:'11:30 AM',reason:'Rash assessment',priority:'Low',status:'Completed'}
+ ];
+ const R=[
+  {id:uid('RF'),pid:'PT1001',fromDoc:'Dr. Meera Joshi',fromDept:'General Medicine',toDoc:'Dr. Ramesh Rao',toDept:'Cardiology',reason:'Exertional chest tightness, abnormal ECG',priority:'High',date:dAgo(30),status:'Accepted'},
+  {id:uid('RF'),pid:'PT1002',fromDoc:'Dr. Arjun Das',fromDept:'General Medicine',toDoc:'Dr. Vikram Sen',toDept:'Neurology',reason:'Persistent arm numbness and tingling',priority:'Normal',date:dAgo(22),status:'Pending'},
+  {id:uid('RF'),pid:'PT1003',fromDoc:'Dr. Meera Joshi',fromDept:'General Medicine',toDoc:'Dr. Anil Kumar',toDept:'Orthopedics',reason:'Post-ACL knee pain with swelling',priority:'Normal',date:dAgo(12),status:'Completed'},
+  {id:uid('RF'),pid:'PT1001',fromDoc:'Dr. Ramesh Rao',fromDept:'Cardiology',toDoc:'Dr. Vikram Sen',toDept:'Neurology',reason:'Rule out neurological cause of dizziness',priority:'Normal',date:dAgo(6),status:'Follow-up Required'},
+  {id:uid('RF'),pid:'PT1005',fromDoc:'Dr. Kavya Reddy',fromDept:'Pediatrics',toDoc:'Dr. Leela Menon',toDept:'ENT',reason:'Recurrent throat infection',priority:'Low',date:dAgo(1),status:'Pending'}
+ ];
+ const RP=[
+  {id:uid('RP'),pid:'PT1001',type:'ECG',name:'Resting ECG',date:dAgo(38),doctor:'Dr. Meera Joshi',dept:'General Medicine',summary:'Sinus rhythm with ST changes',findings:'Recommend cardiology review'},
+  {id:uid('RP'),pid:'PT1001',type:'Blood Test',name:'Lipid Profile',date:dAgo(20),doctor:'Dr. Ramesh Rao',dept:'Cardiology',summary:'LDL elevated',findings:'Statin considered'},
+  {id:uid('RP'),pid:'PT1003',type:'MRI',name:'Right Knee MRI',date:dAgo(10),doctor:'Dr. Anil Kumar',dept:'Orthopedics',summary:'Mild meniscal degeneration',findings:'Conservative management'},
+  {id:uid('RP'),pid:'PT1005',type:'Blood Test',name:'CBC',date:dAgo(2),doctor:'Dr. Kavya Reddy',dept:'Pediatrics',summary:'Mild leukocytosis',findings:'Likely viral, review advised'}
+ ];
+ return {patients:P,history:H,appointments:A,referrals:R,reports:RP,assessments:[],notifs:[
+   {t:'Referral pending acceptance — PT1002 → Neurology',d:dAgo(1)},
+   {t:'High-risk patient flagged: PT1001',d:today()},
+   {t:'New report uploaded for PT1005',d:today()}
+ ]};
+}
+
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+const pt=pid=>DB.patients.find(p=>p.pid===pid);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2600)}
+function openModal(html){$('modalBox').innerHTML=html;$('modal').classList.add('on')}
+function closeModal(){$('modal').classList.remove('on')}
+function deptIcon(n){const d=DEPTS.find(x=>x.name===n);return d?d.icon:'🏥'}
+
+/* ---------- risk engine (transparent prototype) ---------- */
+function risk(pid){
+  const p=pt(pid); if(!p) return {score:0,level:'LOW',lines:[]};
+  let s=0,L=[];
+  const adm=parseInt(p.admissions)||0;
+  if(adm>0){const v=Math.min(adm*10,25);s+=v;L.push(['Previous admissions ('+adm+')','+'+v])}
+  const visits=DB.history.filter(h=>h.pid===pid).length;
+  if(visits>=2){const v=Math.min(visits*5,20);s+=v;L.push(['Repeated hospital visits ('+visits+')','+'+v])}
+  const refs=DB.referrals.filter(r=>r.pid===pid);
+  if(refs.length>1){const v=Math.min(refs.length*6,18);s+=v;L.push(['Multiple referrals ('+refs.length+')','+'+v])}
+  if(refs.some(r=>r.status==='Follow-up Required'||r.status==='Pending')){s+=10;L.push(['Pending follow-up / referral','+10'])}
+  if(p.age>=60){s+=12;L.push(['Age 60+','+12'])} else if(p.age>=45){s+=6;L.push(['Age 45+','+6'])}
+  const cond=(p.conditions||'').toLowerCase();
+  ['diabet','hypertens','asthma','cardiac','kidney'].forEach(k=>{if(cond.includes(k)){s+=7;L.push(['Chronic condition: '+k,'+7'])}});
+  const ass=DB.assessments.filter(a=>a.pid===pid);
+  if(ass.some(a=>a.urgency==='URGENT')){s+=25;L.push(['AI assessment flagged red-flag symptoms','+25'])}
+  else if(ass.some(a=>a.urgency==='CAUTION')){s+=10;L.push(['AI assessment advised evaluation','+10'])}
+  const sev=ass.length?Math.max(...ass.map(a=>a.severity||0)):0;
+  if(sev>=7){s+=8;L.push(['Reported severity '+sev+'/10','+8'])}
+  s=Math.min(100,s);
+  const level=s>=75?'CRITICAL':s>=50?'HIGH':s>=25?'MEDIUM':'LOW';
+  return {score:s,level,lines:L};
+}
+const riskTag=l=>`<span class="tag t-${l==='CRITICAL'?'crit':l==='HIGH'?'high':l==='MEDIUM'?'med':'low'}">${l==='CRITICAL'?'🔴':l==='HIGH'?'🩷':l==='MEDIUM'?'🟠':'🟢'} ${l}</span>`;
+
+/* ---------- navigation ---------- */
+const PAGES=[
+ ['dashboard','🏠','Dashboard','MAIN'],
+ ['patients','👤','Patients'],
+ ['register','➕','Register Patient'],
+ ['ai','🔍','AI Symptom Assistant','CLINICAL'],
+ ['appointments','📅','Appointments'],
+ ['referrals','🔗','Referrals'],
+ ['history','📋','Medical History'],
+ ['reports','📄','Reports'],
+ ['risk','⚠️','Risk Analysis'],
+ ['doctorboard','👨‍⚕️','Doctor Dashboard','PEOPLE'],
+ ['doctors','🧑‍⚕️','Doctors'],
+ ['departments','🏥','Departments'],
+ ['graph','🕸️','Referral Graph (ADSA)','INSIGHTS'],
+ ['analytics','📊','Analytics'],
+ ['subjects','🧩','Subject Integration','ACADEMIC'],
+ ['er','🗄️','ER Diagram'],
+ ['dmgt','📐','DMGT Model'],
+ ['about','ℹ️','About System']
+];
+function buildNav(){
+  $('nav').innerHTML=PAGES.map(p=>(p[3]?`<div class="grp">${p[3]}</div>`:'')+
+    `<a id="nav-${p[0]}" onclick="go('#${p[0]}')"><span>${p[1]}</span>${p[2]}</a>`).join('');
+}
+function go(hash){
+  const id=(hash||'#dashboard').replace('#','').split('/')[0];
+  const arg=(hash||'').split('/')[1];
+  location.hash=hash;
+  document.querySelectorAll('.nav a').forEach(a=>a.classList.remove('on'));
+  const n=$('nav-'+id); if(n)n.classList.add('on');
+  $('side').classList.remove('open');
+  (VIEWS[id]||VIEWS.dashboard)(arg);
+  window.scrollTo(0,0);
+}
+window.addEventListener('hashchange',()=>{ if(!skipHash) go(location.hash); skipHash=false; });
+let skipHash=false;
+
+/* ============================ VIEWS ============================ */
+const VIEWS={};
+
+VIEWS.dashboard=()=>{
+  const tA=DB.appointments.filter(a=>a.date===today());
+  const act=DB.referrals.filter(r=>r.status==='Pending'||r.status==='Accepted');
+  const fu=DB.referrals.filter(r=>r.status==='Follow-up Required').length+DB.appointments.filter(a=>a.status==='Follow-up').length;
+  const hr=DB.patients.filter(p=>['HIGH','CRITICAL'].includes(risk(p.pid).level));
+  const cards=[
+   ['👥','Total Patients',DB.patients.length,'var(--brand)'],
+   ['📅',"Today's Appointments",tA.length,'var(--brand2)'],
+   ['🔗','Active Referrals',act.length,'var(--warn)'],
+   ['⏳','Pending Follow-ups',fu,'#c08bff'],
+   ['⚠️','High Risk Patients',hr.length,'var(--dang)'],
+   ['📄','Reports Available',DB.reports.length,'var(--ok)']
+  ];
+  $('view').innerHTML=`
+  <h1 class="page">Hospital Overview</h1>
+  <p class="sub">Centralized view across all departments — one patient, one record.</p>
+  <div class="grid g6">${cards.map(c=>`<div class="card stat"><div class="ic" style="color:${c[3]}">${c[0]}</div>
+    <div class="v">${c[2]}</div><div class="l">${c[1]}</div></div>`).join('')}</div>
+
+  <div class="grid g2" style="margin-top:16px">
+    <div class="card"><div class="h">Today's Appointments <button class="btn s o" onclick="go('#appointments')">View all</button></div>
+      ${tA.length?`<table><tr><th>Time</th><th>Patient</th><th>Department</th><th>Doctor</th><th>Status</th></tr>
+      ${tA.map(a=>`<tr><td>${a.time}</td><td>${esc((pt(a.pid)||{}).name||a.pid)}</td><td>${deptIcon(a.dept)} ${a.dept}</td><td>${a.doctor}</td><td><span class="tag t-info">${a.status}</span></td></tr>`).join('')}</table>`:'<p class="mini">No appointments today.</p>'}
+    </div>
+    <div class="card"><div class="h">High Risk Patients <button class="btn s o" onclick="go('#risk')">Risk analysis</button></div>
+      ${hr.length?hr.map(p=>{const r=risk(p.pid);return `<div class="kv"><span>${esc(p.name)} · ${p.pid}</span><b>${r.score}/100 ${riskTag(r.level)}</b></div>`}).join(''):'<p class="mini">No high risk patients.</p>'}
+    </div>
+  </div>
+
+  <div class="grid g2" style="margin-top:16px">
+    <div class="card"><div class="h">Recent Referral Activity</div>
+      <div class="tl">${DB.referrals.slice(-5).reverse().map(r=>`<div class="it"><div class="d">${r.date} · ${r.status}</div>
+        <b>${esc((pt(r.pid)||{}).name||r.pid)}</b> — ${r.fromDept} → ${r.toDept}<div class="mini">${esc(r.reason)}</div></div>`).join('')}</div>
+    </div>
+    <div class="card"><div class="h">Quick Actions</div>
+      <div class="chips">
+        <div class="chip" onclick="go('#register')">➕ Register Patient</div>
+        <div class="chip" onclick="go('#ai')">🔍 AI Symptom Assistant</div>
+        <div class="chip" onclick="go('#appointments')">📅 Book Appointment</div>
+        <div class="chip" onclick="go('#referrals')">🔗 Create Referral</div>
+        <div class="chip" onclick="go('#reports')">📄 Add Report</div>
+        <div class="chip" onclick="go('#graph')">🕸️ Referral Graph</div>
+        <div class="chip" onclick="reset()">♻️ Reset demo data</div>
+      </div>
+      <p class="mini" style="margin-top:14px">Prototype system for academic demonstration. Not for clinical use.</p>
+    </div>
+  </div>`;
+};
+
+/* ---------- patients ---------- */
+VIEWS.patients=()=>{
+  $('view').innerHTML=`<h1 class="page">Patients</h1><p class="sub">${DB.patients.length} centralized patient records.</p>
+   <div class="card"><div class="h">All Patients <button class="btn s" onclick="go('#register')">➕ Register</button></div>
+   <div style="overflow:auto"><table><tr><th>ID</th><th>Name</th><th>Age/Gender</th><th>Phone</th><th>Blood</th><th>Preferred Dept</th><th>Risk</th><th></th></tr>
+   ${DB.patients.map(p=>{const r=risk(p.pid);return `<tr><td><b>${p.pid}</b></td><td>${esc(p.name)}</td><td>${p.age} / ${p.gender}</td><td>${esc(p.phone)}</td><td>${p.blood}</td><td>${deptIcon(p.pref)} ${esc(p.pref)}</td><td>${riskTag(r.level)} ${r.score}</td>
+   <td><button class="btn s o" onclick="go('#patient/${p.pid}')">Open Record</button></td></tr>`}).join('')}
+   </table></div></div>`;
+};
+
+VIEWS.patient=(pid,tab)=>{
+  const p=pt(pid); if(!p){$('view').innerHTML='<div class="card">Patient not found.</div>';return}
+  const t=tab||'Overview';
+  const hist=DB.history.filter(h=>h.pid===pid).sort((a,b)=>a.date.localeCompare(b.date));
+  const apps=DB.appointments.filter(a=>a.pid===pid);
+  const reps=DB.reports.filter(r=>r.pid===pid);
+  const refs=DB.referrals.filter(r=>r.pid===pid);
+  const ass=DB.assessments.filter(a=>a.pid===pid);
+  const r=risk(pid);
+  const tl=[{d:p.created,t:'Registration',s:'Patient registered in centralized system'}]
+    .concat(hist.map(h=>({d:h.date,t:h.dept+' consultation',s:h.complaint+' — '+h.doctor})))
+    .concat(refs.map(x=>({d:x.date,t:'Referral → '+x.toDept,s:x.reason+' ('+x.status+')'})))
+    .concat(reps.map(x=>({d:x.date,t:'Report: '+x.type,s:x.name+' — '+x.summary})))
+    .concat(apps.map(x=>({d:x.date,t:'Appointment · '+x.dept,s:x.reason+' ('+x.status+')'})))
+    .sort((a,b)=>a.d.localeCompare(b.d));
+
+  let body='';
+  if(t==='Overview'){
+    body=`<div class="grid g2">
+      <div class="card"><div class="h">Clinical Snapshot</div>
+        ${[['Blood Group',p.blood],['Allergies',p.allergies],['Existing Conditions',p.conditions],['Current Medication',p.meds],
+           ['Previous Admissions',p.admissions],['Previous Surgeries',p.surgeries],['Current Symptoms',p.symptoms],['Preferred Department',p.pref]]
+          .map(k=>`<div class="kv"><span>${k[0]}</span><b>${esc(k[1]||'—')}</b></div>`).join('')}</div>
+      <div class="card"><div class="h">Contact</div>
+        ${[['Phone',p.phone],['Email',p.email],['Address',p.address],['Emergency Contact',p.ec],['Registered',p.created]]
+          .map(k=>`<div class="kv"><span>${k[0]}</span><b>${esc(k[1]||'—')}</b></div>`).join('')}
+        <div style="margin-top:12px" class="chips">
+          <div class="chip" onclick="go('#ai/${pid}')">🔍 AI Assessment</div>
+          <div class="chip" onclick="apptForm('${pid}')">📅 Appointment</div>
+          <div class="chip" onclick="refForm('${pid}')">🔗 Referral</div>
+          <div class="chip" onclick="reportForm('${pid}')">📄 Add Report</div>
+        </div></div></div>
+      <div class="card" style="margin-top:14px"><div class="h">Patient Journey Timeline</div>
+        <div class="tl">${tl.map(x=>`<div class="it"><div class="d">${x.d}</div><b>${esc(x.t)}</b><div class="mini">${esc(x.s)}</div></div>`).join('')}
+        <div class="it"><div class="d">${today()}</div><b>Current Visit</b><div class="mini">Active record open at front desk</div></div></div></div>`;
+  }
+  if(t==='Appointments') body=`<div class="card"><div class="h">Appointments <button class="btn s" onclick="apptForm('${pid}')">➕ Book</button></div>${apptTable(apps)}</div>`;
+  if(t==='Medical History') body=`<div class="card"><div class="h">Medical History</div>${histTable(hist)}</div>`;
+  if(t==='Reports') body=`<div class="card"><div class="h">Reports <button class="btn s" onclick="reportForm('${pid}')">➕ Add Report</button></div>${repList(reps)}</div>`;
+  if(t==='Referrals') body=`<div class="card"><div class="h">Referrals <button class="btn s" onclick="refForm('${pid}')">➕ Create</button></div>${refTable(refs)}</div>`;
+  if(t==='Risk Analysis') body=riskCard(pid);
+  if(t==='AI Assessment') body=`<div class="card"><div class="h">AI Assessments <button class="btn s" onclick="go('#ai/${pid}')">🔍 New assessment</button></div>
+     ${ass.length?ass.map(a=>assessmentCard(a,false)).join(''):'<p class="mini">No AI assessments recorded yet.</p>'}</div>`;
+
+  $('view').innerHTML=`
+  <h1 class="page">${esc(p.name)} <span class="mini">· ${p.pid}</span></h1>
+  <p class="sub">${p.age} yrs · ${p.gender} · ${p.blood} · ${esc(p.phone)} · Risk ${r.score}/100 ${riskTag(r.level)}</p>
+  <div class="tabs">${['Overview','Appointments','Medical History','Reports','Referrals','Risk Analysis','AI Assessment']
+    .map(x=>`<button class="${x===t?'on':''}" onclick="VIEWS.patient('${pid}','${x}')">${x}</button>`).join('')}</div>${body}`;
+};
+
+const apptTable=a=>a.length?`<div style="overflow:auto"><table><tr><th>ID</th><th>Date</th><th>Time</th><th>Patient</th><th>Doctor</th><th>Dept</th><th>Reason</th><th>Priority</th><th>Status</th></tr>
+ ${a.map(x=>`<tr><td>${x.id}</td><td>${x.date}</td><td>${x.time}</td><td>${esc((pt(x.pid)||{}).name||x.pid)}</td><td>${x.doctor}</td><td>${deptIcon(x.dept)} ${x.dept}</td><td>${esc(x.reason)}</td><td>${x.priority}</td>
+ <td><select class="btn s o" onchange="setStatus('appointments','${x.id}',this.value)">${['Scheduled','Completed','Cancelled','Follow-up'].map(s=>`<option ${s===x.status?'selected':''}>${s}</option>`).join('')}</select></td></tr>`).join('')}</table></div>`:'<p class="mini">No appointments.</p>';
+
+const refTable=r=>r.length?`<div style="overflow:auto"><table><tr><th>Referral ID</th><th>Date</th><th>Patient</th><th>From</th><th>To</th><th>Reason</th><th>Priority</th><th>Status</th></tr>
+ ${r.map(x=>`<tr><td><b>${x.id}</b></td><td>${x.date}</td><td>${esc((pt(x.pid)||{}).name||x.pid)}</td><td>${x.fromDoc}<div class="mini">${x.fromDept}</div></td>
+ <td>${x.toDoc}<div class="mini">${x.toDept}</div></td><td>${esc(x.reason)}</td><td>${x.priority}</td>
+ <td><select class="btn s o" onchange="setStatus('referrals','${x.id}',this.value)">${['Pending','Accepted','Completed','Follow-up Required'].map(s=>`<option ${s===x.status?'selected':''}>${s}</option>`).join('')}</select></td></tr>`).join('')}</table></div>`:'<p class="mini">No referrals.</p>';
+
+const histTable=h=>h.length?`<div class="tl">${h.map(x=>`<div class="it"><div class="d">${x.date} · ${deptIcon(x.dept)} ${x.dept} · ${x.doctor}</div>
+ <b>${esc(x.complaint)}</b><div class="mini">Notes: ${esc(x.notes)} · Referral: ${esc(x.referral||'-')} · Report: ${esc(x.report||'-')}</div></div>`).join('')}</div>`:'<p class="mini">No history records.</p>';
+
+const repList=r=>r.length?`<div class="tl">${r.map(x=>`<div class="it"><div class="d">${x.date} · ${x.dept} · ${x.doctor}</div>
+ <b>${esc(x.type)} — ${esc(x.name)}</b><div class="mini">${esc(x.summary)} · Findings: ${esc(x.findings)}</div>
+ <button class="btn s o" style="margin-top:6px" onclick="openModal('<h3>📄 ${esc(x.name)}</h3><p class=mini>${esc(x.type)} · ${x.date} · ${esc(x.doctor)} · ${esc(x.dept)}</p><p><b>Summary:</b> ${esc(x.summary)}</p><p><b>Important findings:</b> ${esc(x.findings)}</p><p class=mini>Prototype record — no file is stored on a hospital server.</p>')">📄 Report Available</button></div>`).join('')}</div>`:'<p class="mini">No reports.</p>';
+
+function setStatus(coll,id,v){const o=DB[coll].find(x=>x.id===id);if(o){o.status=v;save();toast('Status updated → '+v)}}
+
+/* ---------- registration ---------- */
+VIEWS.register=()=>{
+  const nid='PT'+(1000+DB.patients.length+1);
+  const F=[['pid','Patient ID',nid,'ro'],['name','Full Name'],['age','Age','','number'],['gender','Gender','','sel:Male,Female,Other'],
+   ['phone','Phone Number'],['email','Email'],['address','Address'],['blood','Blood Group','','sel:A+,A-,B+,B-,O+,O-,AB+,AB-'],
+   ['ec','Emergency Contact'],['allergies','Allergies'],['conditions','Existing Conditions'],['symptoms','Current Symptoms'],
+   ['admissions','Previous Admissions'],['surgeries','Previous Surgeries'],['meds','Current Medication'],
+   ['pref','Preferred Department','','sel:'+DEPTS.map(d=>d.name).join(',')]];
+  $('view').innerHTML=`<h1 class="page">Register Patient</h1><p class="sub">A unique Patient ID is generated automatically and stored centrally.</p>
+  <div class="card"><div class="grid g3">${F.map(f=>{
+    const t=f[3]||'';
+    if(t.startsWith('sel:')) return `<div class="field"><label>${f[1]}</label><select id="f_${f[0]}">${t.slice(4).split(',').map(o=>`<option>${o}</option>`).join('')}</select></div>`;
+    return `<div class="field"><label>${f[1]}</label><input id="f_${f[0]}" type="${t==='number'?'number':'text'}" value="${f[2]||''}" ${t==='ro'?'readonly':''} /></div>`;
+  }).join('')}</div>
+  <button class="btn" onclick="registerPatient()">✅ Register Patient</button></div>`;
+};
+function registerPatient(){
+  const g=k=>($('f_'+k)||{}).value||'';
+  if(!g('name')||!g('age')){toast('Name and age are required');return}
+  const p={pid:g('pid'),name:g('name'),age:+g('age'),gender:g('gender'),phone:g('phone'),email:g('email'),address:g('address'),
+   blood:g('blood'),ec:g('ec'),allergies:g('allergies'),conditions:g('conditions'),symptoms:g('symptoms'),
+   admissions:g('admissions'),surgeries:g('surgeries'),meds:g('meds'),pref:g('pref'),created:today()};
+  DB.patients.push(p);
+  DB.history.push({id:uid('H'),pid:p.pid,date:today(),dept:p.pref,doctor:'Front Desk',complaint:p.symptoms||'Registration',notes:'Patient registered',referral:'-',report:'-'});
+  save();
+  openModal(`<h2 style="margin-top:0">✅ Patient Registered Successfully</h2>
+   <p class="mini">${esc(p.name)} · ${p.pid} · ${p.age} yrs · ${p.gender}</p>
+   <div class="chips" style="margin-top:14px">
+    <div class="chip" onclick="closeModal();go('#patient/${p.pid}')">👤 View Profile</div>
+    <div class="chip" onclick="closeModal();apptForm('${p.pid}')">📅 Add Appointment</div>
+    <div class="chip" onclick="closeModal();go('#ai/${p.pid}')">🔍 Start AI Symptom Assessment</div>
+    <div class="chip" onclick="closeModal();reportForm('${p.pid}')">📄 Add Report</div>
+    <div class="chip" onclick="closeModal();refForm('${p.pid}')">🔗 Create Referral</div>
+   </div>`);
+}
+
+/* ============ AI SYMPTOM ASSISTANT ============ */
+const DISCLAIM='<p class="mini">⚕️ This tool provides preliminary guidance only and does not replace professional medical diagnosis or treatment.</p>';
+const CATS={
+ 'Leg / limb pain':{loc:['Hip','Thigh','Knee','Calf','Ankle','Foot','Whole leg'],dept:'Orthopedics'},
+ 'Back pain':{loc:['Upper back','Mid back','Lower back','Neck','Radiating to leg'],dept:'Orthopedics'},
+ 'Chest discomfort':{loc:['Centre of chest','Left chest','Right chest','Spreading to arm','Spreading to jaw'],dept:'Cardiology'},
+ 'Headache / dizziness':{loc:['Forehead','One side','Back of head','Whole head','With dizziness'],dept:'Neurology'},
+ 'Numbness / tingling / weakness':{loc:['Arm','Hand','Leg','Face','One whole side'],dept:'Neurology'},
+ 'Skin problem':{loc:['Face','Arms','Legs','Trunk','Scalp','Whole body'],dept:'Dermatology'},
+ 'Ear / nose / throat':{loc:['Ear','Nose','Throat','Sinus','Voice'],dept:'ENT'},
+ 'Fever / general illness':{loc:['Whole body','With cough','With stomach pain','With rash','Unclear'],dept:'General Medicine'},
+ "Women's health":{loc:['Lower abdomen','Menstrual','Pregnancy related','Other'],dept:'Gynecology'},
+ 'Child health concern':{loc:['Fever','Cough','Stomach','Feeding','Growth'],dept:'Pediatrics'}
+};
+const PAINTYPES=['Sharp','Dull','Burning','Throbbing','Cramping','Tingling','Numbness','Stiffness'];
+const DURS=['Today','Few days','Few weeks','More than a month'];
+const PATTERN=['At rest','While walking','After exercise','At night','Continuously'];
+const ASSOC=['Swelling','Redness','Fever','Numbness','Weakness','Difficulty walking','Recent injury','Chest discomfort','Shortness of breath','Sudden severe pain','Fainting','Severe bleeding','Sudden confusion','Rash / itching'];
+const REDFLAGS=['Chest discomfort','Shortness of breath','Sudden severe pain','Fainting','Severe bleeding','Sudden confusion'];
+let AI={};
+VIEWS.ai=pid=>{AI={pid:pid||'',step:0,cat:'',loc:'',type:[],dur:'',sev:5,pattern:[],assoc:[],dyn:{}};renderAI()};
+
+function dynQuestions(){
+  const q=[];
+  const l=AI.loc,c=AI.cat,a=AI.assoc;
+  if(l==='Knee') q.push(['knee','Knee specific',['Locking or giving way','Swelling around knee','Pain climbing stairs','Recent twist/injury','Difficulty fully bending']]);
+  if(l==='Calf') q.push(['calf','Calf specific',['Calf swelling','Redness or warmth','Recent long travel / immobility','Sudden onset','Pain when flexing foot']]);
+  if(c==='Numbness / tingling / weakness'||AI.type.includes('Numbness')||a.includes('Numbness'))
+    q.push(['neuro','Nerve related',['Muscle weakness','Back or neck pain','Loss of sensation','Difficulty gripping objects','Balance problems']]);
+  if(c==='Chest discomfort') q.push(['card','Heart related',['Pain spreads to arm/jaw','Sweating with pain','Worse on exertion','Palpitations','Breathlessness lying down']]);
+  if(c==='Skin problem') q.push(['skin','Skin related',['Itching','Spreading rash','Blisters','Recent new product/medicine','Pain in the area']]);
+  if(c==='Fever / general illness') q.push(['gen','General',['Fever above 102°F','Loss of appetite','Weight loss','Night sweats','Recent travel']]);
+  if(c==='Ear / nose / throat') q.push(['ent','ENT related',['Hearing reduced','Discharge','Sore throat','Blocked nose','Voice change']]);
+  return q;
+}
+function renderAI(){
+  const steps=['Patient','Main concern','Location','Pain type','Duration','Severity','Pattern','Associated','Focused questions','Result'];
+  const pctRaw=Math.min(AI.step/9*100,100);
+  const dq=dynQuestions();
+  let body='';
+  const S=AI.step;
+  if(S===0){
+    body=`<div class="field"><label>Select patient (optional — guidance can run anonymously)</label>
+      <select id="aiP"><option value="">Anonymous walk-in</option>${DB.patients.map(p=>`<option value="${p.pid}" ${p.pid===AI.pid?'selected':''}>${esc(p.name)} (${p.pid})</option>`).join('')}</select></div>
+      <button class="btn" onclick="AI.pid=$('aiP').value;AI.step=1;renderAI()">Start assessment →</button>`;
+  } else if(S===1){
+    body=`<p>What is the main concern today?</p><div class="chips">${Object.keys(CATS).map(c=>`<div class="chip ${AI.cat===c?'on':''}" onclick="AI.cat='${c}';AI.step=2;renderAI()">${c}</div>`).join('')}</div>`;
+  } else if(S===2){
+    body=`<p>Where exactly is the problem?</p><div class="chips">${CATS[AI.cat].loc.map(l=>`<div class="chip ${AI.loc===l?'on':''}" onclick="AI.loc='${l}';AI.step=3;renderAI()">${l}</div>`).join('')}</div>`;
+  } else if(S===3){
+    body=`<p>What type of sensation best describes it? (multiple allowed)</p><div class="chips">${PAINTYPES.map(t=>`<div class="chip ${AI.type.includes(t)?'on':''}" onclick="tog(AI.type,'${t}')">${t}</div>`).join('')}</div>${nextBtn()}`;
+  } else if(S===4){
+    body=`<p>When did it start?</p><div class="chips">${DURS.map(d=>`<div class="chip ${AI.dur===d?'on':''}" onclick="AI.dur='${d}';AI.step=5;renderAI()">${d}</div>`).join('')}</div>`;
+  } else if(S===5){
+    body=`<p>How severe is it right now? <b id="sevV">${AI.sev}</b>/10</p>
+      <input type="range" min="0" max="10" value="${AI.sev}" oninput="AI.sev=+this.value;$('sevV').textContent=this.value" />${nextBtn()}`;
+  } else if(S===6){
+    body=`<p>When does it occur?</p><div class="chips">${PATTERN.map(t=>`<div class="chip ${AI.pattern.includes(t)?'on':''}" onclick="tog(AI.pattern,'${t}')">${t}</div>`).join('')}</div>${nextBtn()}`;
+  } else if(S===7){
+    body=`<p>Any additional symptoms?</p><div class="chips">${ASSOC.map(t=>`<div class="chip ${AI.assoc.includes(t)?'on':''}" onclick="tog(AI.assoc,'${t}')">${t}</div>`).join('')}</div>${nextBtn()}`;
+  } else if(S===8){
+    body=dq.length?dq.map(q=>`<p><b>${q[1]}</b> — questions adapted to your selections</p>
+      <div class="chips">${q[2].map(o=>`<div class="chip ${(AI.dyn[q[0]]||[]).includes(o)?'on':''}" onclick="togDyn('${q[0]}','${o.replace(/'/g,"\\'")}')">${o}</div>`).join('')}</div>`).join('')
+      :'<p class="mini">No focused follow-ups required for this pattern.</p>';
+    body+=`<button class="btn" style="margin-top:14px" onclick="AI.step=9;renderAI()">Generate guidance →</button>`;
+  } else { renderAIResult(); return }
+  $('view').innerHTML=`<h1 class="page">AI Symptom Assistant</h1>
+   <p class="sub">Structured, question-driven triage guidance — it never names a disease.</p>
+   <div class="alert a-org">${DISCLAIM}</div>
+   <div class="card"><div class="h">Step ${S+1} of 10 — ${steps[S]}</div>
+     <div class="bar"><i style="width:${pctRaw}%"></i></div>
+     <div style="margin-top:16px">${body}</div>
+     ${S>0?`<button class="btn o s" style="margin-top:16px" onclick="AI.step=Math.max(0,AI.step-1);renderAI()">← Back</button>`:''}
+   </div>`;
+}
+const nextBtn=()=>`<button class="btn" style="margin-top:14px" onclick="AI.step++;renderAI()">Continue →</button>`;
+function tog(arr,v){const i=arr.indexOf(v);i<0?arr.push(v):arr.splice(i,1);renderAI()}
+function togDyn(k,v){AI.dyn[k]=AI.dyn[k]||[];tog(AI.dyn[k],v)}
+
+function evaluate(){
+  const flags=AI.assoc.filter(a=>REDFLAGS.includes(a));
+  const dynAll=Object.values(AI.dyn).flat();
+  if(dynAll.includes('Pain spreads to arm/jaw')||dynAll.includes('Sweating with pain')) flags.push('Cardiac pattern reported');
+  if(AI.sev>=9) flags.push('Very high reported severity');
+  if(AI.cat==='Numbness / tingling / weakness'&&dynAll.includes('Muscle weakness')) flags.push('Weakness with numbness');
+  const urgency=flags.length?'URGENT':(AI.sev>=7||AI.dur==='More than a month'||AI.assoc.length>=3)?'CAUTION':'ROUTINE';
+
+  // department scoring
+  const sc={};const add=(d,n,why)=>{sc[d]=sc[d]||{n:0,why:[]};sc[d].n+=n;if(why)sc[d].why.push(why)};
+  add(CATS[AI.cat].dept,4,'Main concern category "'+AI.cat+'" maps to this specialty');
+  if(['Sharp','Dull','Throbbing','Stiffness','Cramping'].some(t=>AI.type.includes(t))&&['Leg / limb pain','Back pain'].includes(AI.cat))
+    add('Orthopedics',3,'Musculoskeletal pain pattern (joint/bone/muscle)');
+  if(AI.type.includes('Numbness')||AI.type.includes('Tingling')||AI.assoc.includes('Weakness'))
+    add('Neurology',3,'Nerve-related features: numbness / tingling / weakness');
+  if(AI.assoc.includes('Chest discomfort')||AI.assoc.includes('Shortness of breath'))
+    add('Cardiology',4,'Chest discomfort or breathlessness reported');
+  if(AI.assoc.includes('Redness')||AI.assoc.includes('Rash / itching')) add('Dermatology',2,'Skin changes reported');
+  if(AI.assoc.includes('Fever')) add('General Medicine',2,'Fever suggests a general medical evaluation first');
+  if(dynAll.includes('Calf swelling')||dynAll.includes('Recent long travel / immobility'))
+    add('General Medicine',3,'Circulation-related features need prompt general assessment');
+  const rec=Object.entries(sc).sort((a,b)=>b[1].n-a[1].n)[0];
+
+  const groups=[];
+  if(['Orthopedics'].includes(rec[0])||AI.cat.includes('pain')) groups.push('Musculoskeletal-related symptoms');
+  if(AI.type.includes('Numbness')||AI.type.includes('Tingling')||AI.assoc.includes('Weakness')) groups.push('Nerve-related symptoms');
+  if(dynAll.includes('Calf swelling')||AI.assoc.includes('Swelling')||AI.assoc.includes('Shortness of breath')) groups.push('Circulation-related symptoms');
+  if(AI.assoc.includes('Recent injury')) groups.push('Injury-related symptoms');
+  if(AI.assoc.includes('Fever')) groups.push('Infection / inflammation-related symptoms');
+  if(!groups.length) groups.push('General, non-specific symptoms');
+
+  return {urgency,flags:[...new Set(flags)],dept:rec[0],why:rec[1].why,groups:[...new Set(groups)],dynAll};
+}
+function renderAIResult(){
+  const e=evaluate();
+  const p=AI.pid?pt(AI.pid):null;
+  const rec={id:uid('AS'),pid:AI.pid,date:today(),cat:AI.cat,loc:AI.loc,type:AI.type,dur:AI.dur,severity:AI.sev,
+    pattern:AI.pattern,assoc:AI.assoc,dyn:AI.dyn,urgency:e.urgency,dept:e.dept,why:e.why,groups:e.groups,flags:e.flags};
+  window.__lastAssess=rec;
+  const alert=e.urgency==='URGENT'
+   ? `<div class="alert a-red"><h2 style="margin:0 0 6px">🔴 URGENT MEDICAL ATTENTION</h2>
+      <p>These symptoms may require urgent medical evaluation. Please seek immediate professional medical care or contact local emergency services.</p>
+      <p class="mini">Triggered by: ${e.flags.map(esc).join(', ')}</p></div>`
+   : e.urgency==='CAUTION'
+   ? `<div class="alert a-org"><h3 style="margin:0 0 6px">🟠 Medical evaluation recommended</h3><p class="mini">Symptom severity or duration suggests a professional assessment soon.</p></div>`
+   : `<div class="alert a-grn"><h3 style="margin:0 0 6px">🟢 Routine consultation may be appropriate</h3><p class="mini">No urgent warning signs were selected.</p></div>`;
+
+  const docs=DOCTORS.filter(d=>d.dept===e.dept);
+  $('view').innerHTML=`<h1 class="page">Assessment Result</h1><p class="sub">Structured guidance summary — generated ${today()}</p>
+  ${alert}
+  <div class="grid g2">
+   <div class="card"><div class="h">Symptom Summary</div>
+    ${[['Main complaint',AI.cat],['Location',AI.loc],['Sensation type',AI.type.join(', ')||'—'],['Duration',AI.dur],
+       ['Severity',AI.sev+'/10'],['Pattern',AI.pattern.join(', ')||'—'],['Associated symptoms',AI.assoc.join(', ')||'None'],
+       ['Focused findings',e.dynAll.join(', ')||'—']]
+      .map(k=>`<div class="kv"><span>${k[0]}</span><b style="text-align:right">${esc(k[1])}</b></div>`).join('')}</div>
+   <div class="card"><div class="h">Possible Symptom Categories</div>
+     ${e.groups.map(g=>`<div class="kv"><span>•</span><b>${g}</b></div>`).join('')}
+     <div class="alert a-org" style="margin-top:12px"><p style="margin:0">These symptoms can have several possible causes. A healthcare professional should evaluate the patient. No diagnosis is being made.</p></div>
+   </div></div>
+
+  <div class="card" style="margin-top:14px"><div class="h">Suggested Department — ${deptIcon(e.dept)} ${e.dept}</div>
+    <p class="mini">Why this department was suggested:</p>
+    ${e.why.map(w=>`<div class="kv"><span>↳</span><b>${esc(w)}</b></div>`).join('')}
+    <div class="h" style="margin-top:16px">Available Doctors</div>
+    <div class="grid g3">${docs.map(d=>`<div class="card"><b>${d.name}</b><div class="mini">${d.dept} · ${d.exp} years experience</div>
+      <div class="mini">Available: ${d.slots.join(', ')}</div>
+      <button class="btn s" style="margin-top:8px" onclick="apptForm('${AI.pid}','${d.id}')">Select &amp; Book</button></div>`).join('')}</div>
+  </div>
+
+  <div class="card" style="margin-top:14px"><div class="h">Doctor Consultation Summary
+    <span><button class="btn s b" onclick="sendToDoctor()">📨 Send to Doctor</button>
+    <button class="btn s" onclick="addAssessToHistory()">➕ Add to Patient History</button></span></div>
+    ${consultSummary(rec)}
+  </div>
+  <div style="margin-top:14px"><button class="btn o" onclick="VIEWS.ai('${AI.pid}')">🔄 New assessment</button></div>`;
+}
+function consultSummary(a){
+  const p=a.pid?pt(a.pid):null;
+  const refs=p?DB.referrals.filter(r=>r.pid===p.pid):[];
+  const hist=p?DB.history.filter(h=>h.pid===p.pid):[];
+  const reps=p?DB.reports.filter(r=>r.pid===p.pid):[];
+  const rows=[
+   ['Patient ID',p?p.pid:'Anonymous'],['Patient Name',p?p.name:'—'],['Age',p?p.age:'—'],
+   ['Main complaint',a.cat],['Symptom location',a.loc],['Pain / sensation type',(a.type||[]).join(', ')||'—'],
+   ['Duration',a.dur],['Severity',a.severity+'/10'],['Associated symptoms',(a.assoc||[]).join(', ')||'None'],
+   ['Relevant previous conditions',p?(p.conditions||'None'):'—'],['Current medication',p?(p.meds||'None'):'—'],
+   ['Allergies',p?(p.allergies||'None'):'—'],
+   ['Previous department visits',hist.length?[...new Set(hist.map(h=>h.dept))].join(', '):'None'],
+   ['Previous referrals',refs.length?refs.map(r=>r.fromDept+'→'+r.toDept).join(', '):'None'],
+   ['Previous reports',reps.length?reps.map(r=>r.type).join(', '):'None'],
+   ['AI suggested department',a.dept],['Urgency level',a.urgency],
+   ['AI reasoning summary',(a.why||[]).join(' | ')]
+  ];
+  return rows.map(r=>`<div class="kv"><span>${r[0]}</span><b style="text-align:right;max-width:60%">${esc(r[1])}</b></div>`).join('')
+   +'<p class="mini" style="margin-top:10px">The patient does not need to repeat this information — the doctor opens this summary before consultation.</p>';
+}
+function sendToDoctor(){
+  const a=window.__lastAssess; if(!a)return;
+  if(!DB.assessments.some(x=>x.id===a.id))DB.assessments.push(a);
+  DB.notifs.unshift({t:'New AI assessment sent to '+a.dept+(a.pid?' for '+a.pid:''),d:today()});
+  save();toast('Summary sent to '+a.dept+' queue');
+}
+function addAssessToHistory(){
+  const a=window.__lastAssess; if(!a)return;
+  if(!a.pid){toast('Select a registered patient first');return}
+  if(!DB.assessments.some(x=>x.id===a.id))DB.assessments.push(a);
+  DB.history.push({id:uid('H'),pid:a.pid,date:today(),dept:a.dept,doctor:'AI Triage Desk',
+    complaint:a.cat+' ('+a.loc+')',notes:'Severity '+a.severity+'/10, urgency '+a.urgency,referral:'-',report:'-'});
+  save();toast('Added to patient history');
+}
+const assessmentCard=a=>`<div class="card" style="margin-bottom:10px"><div class="h">${a.date} · ${a.cat} → ${deptIcon(a.dept)} ${a.dept}
+ <span class="tag ${a.urgency==='URGENT'?'t-crit':a.urgency==='CAUTION'?'t-med':'t-low'}">${a.urgency}</span></div>
+ ${consultSummary(a)}</div>`;
+
+/* ---------- appointments ---------- */
+VIEWS.appointments=()=>{
+  const list=DB.appointments.slice().sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  const days=[...new Set(list.map(a=>a.date))].sort();
+  $('view').innerHTML=`<h1 class="page">Appointments</h1><p class="sub">List and calendar-style views across all departments.</p>
+  <div class="card"><div class="h">All Appointments <button class="btn s" onclick="apptForm('')">➕ Book Appointment</button></div>${apptTable(list)}</div>
+  <div class="card" style="margin-top:14px"><div class="h">Calendar View</div>
+   <div class="grid g3">${days.map(d=>`<div class="card"><b>${d===today()?'🟢 Today · ':''}${d}</b>
+    ${list.filter(a=>a.date===d).map(a=>`<div class="kv"><span>${a.time}</span><b>${esc((pt(a.pid)||{}).name||a.pid)} · ${a.dept}</b></div>`).join('')}</div>`).join('')}</div></div>`;
+};
+function apptForm(pid,docId){
+  const d=DOCTORS.find(x=>x.id===docId);
+  openModal(`<h3 style="margin-top:0">📅 Book Appointment</h3>
+  <div class="grid g2">
+   <div class="field"><label>Patient</label><select id="ap_p">${DB.patients.map(p=>`<option value="${p.pid}" ${p.pid===pid?'selected':''}>${esc(p.name)} (${p.pid})</option>`).join('')}</select></div>
+   <div class="field"><label>Doctor</label><select id="ap_d" onchange="syncDept()">${DOCTORS.map(x=>`<option value="${x.id}" ${x.id===docId?'selected':''}>${x.name} — ${x.dept}</option>`).join('')}</select></div>
+   <div class="field"><label>Department</label><input id="ap_dept" value="${d?d.dept:DOCTORS[0].dept}" readonly /></div>
+   <div class="field"><label>Date</label><input id="ap_date" type="date" value="${today()}" /></div>
+   <div class="field"><label>Time</label><select id="ap_t">${(d?d.slots:DOCTORS[0].slots).concat(['09:00 AM','11:00 AM','01:00 PM','04:00 PM']).map(s=>`<option>${s}</option>`).join('')}</select></div>
+   <div class="field"><label>Priority</label><select id="ap_pr"><option>Normal</option><option>High</option><option>Low</option></select></div>
+   <div class="field" style="grid-column:1/-1"><label>Reason</label><input id="ap_r" placeholder="Reason for visit" /></div>
+   <div class="field"><label>Status</label><select id="ap_s"><option>Scheduled</option><option>Completed</option><option>Cancelled</option><option>Follow-up</option></select></div>
+  </div>
+  <button class="btn" onclick="saveAppt()">✅ Book</button> <button class="btn o" onclick="closeModal()">Cancel</button>`);
+}
+function syncDept(){const d=DOCTORS.find(x=>x.id===$('ap_d').value);$('ap_dept').value=d.dept;
+ $('ap_t').innerHTML=d.slots.concat(['09:00 AM','11:00 AM','01:00 PM','04:00 PM']).map(s=>`<option>${s}</option>`).join('')}
+function saveAppt(){
+  const d=DOCTORS.find(x=>x.id===$('ap_d').value);
+  DB.appointments.push({id:uid('AP'),pid:$('ap_p').value,doctor:d.name,dept:d.dept,date:$('ap_date').value,time:$('ap_t').value,
+    reason:$('ap_r').value||'Consultation',priority:$('ap_pr').value,status:$('ap_s').value});
+  save();closeModal();toast('Appointment booked');go('#appointments');
+}
+
+/* ---------- referrals ---------- */
+VIEWS.referrals=()=>{
+  $('view').innerHTML=`<h1 class="page">Referral Management</h1><p class="sub">Cross-department referral tracking with status lifecycle.</p>
+  <div class="grid g6">${['Pending','Accepted','Completed','Follow-up Required'].map(s=>`<div class="card stat"><div class="v">${DB.referrals.filter(r=>r.status===s).length}</div><div class="l">${s}</div></div>`).join('')}</div>
+  <div class="card" style="margin-top:14px"><div class="h">All Referrals <span><button class="btn s o" onclick="go('#graph')">🕸️ Graph view</button> <button class="btn s" onclick="refForm('')">➕ Create Referral</button></span></div>
+  ${refTable(DB.referrals)}</div>`;
+};
+function refForm(pid){
+  openModal(`<h3 style="margin-top:0">🔗 Create Referral</h3>
+  <div class="grid g2">
+   <div class="field"><label>Patient</label><select id="rf_p">${DB.patients.map(p=>`<option value="${p.pid}" ${p.pid===pid?'selected':''}>${esc(p.name)} (${p.pid})</option>`).join('')}</select></div>
+   <div class="field"><label>From Doctor</label><select id="rf_fd">${DOCTORS.map(d=>`<option value="${d.id}">${d.name} — ${d.dept}</option>`).join('')}</select></div>
+   <div class="field"><label>To Doctor</label><select id="rf_td">${DOCTORS.map(d=>`<option value="${d.id}">${d.name} — ${d.dept}</option>`).join('')}</select></div>
+   <div class="field"><label>Priority</label><select id="rf_pr"><option>Normal</option><option>High</option><option>Low</option></select></div>
+   <div class="field" style="grid-column:1/-1"><label>Reason</label><textarea id="rf_r" rows="2" placeholder="Clinical reason for referral"></textarea></div>
+   <div class="field"><label>Date</label><input id="rf_d" type="date" value="${today()}" /></div>
+   <div class="field"><label>Status</label><select id="rf_s"><option>Pending</option><option>Accepted</option><option>Completed</option><option>Follow-up Required</option></select></div>
+  </div>
+  <button class="btn" onclick="saveRef()">✅ Create</button> <button class="btn o" onclick="closeModal()">Cancel</button>`);
+}
+function saveRef(){
+  const f=DOCTORS.find(d=>d.id===$('rf_fd').value),t=DOCTORS.find(d=>d.id===$('rf_td').value);
+  DB.referrals.push({id:uid('RF'),pid:$('rf_p').value,fromDoc:f.name,fromDept:f.dept,toDoc:t.name,toDept:t.dept,
+    reason:$('rf_r').value||'Specialist opinion',priority:$('rf_pr').value,date:$('rf_d').value,status:$('rf_s').value});
+  save();closeModal();toast('Referral created');go('#referrals');
+}
+
+/* ---------- history / reports ---------- */
+VIEWS.history=()=>{
+  const h=DB.history.slice().sort((a,b)=>b.date.localeCompare(a.date));
+  $('view').innerHTML=`<h1 class="page">Medical History</h1><p class="sub">Chronological, cross-department consultation record.</p>
+  <div class="card"><div class="h">All Records <button class="btn s" onclick="histForm()">➕ Add Record</button></div>
+  <div style="overflow:auto"><table><tr><th>Date</th><th>Patient</th><th>Department</th><th>Doctor</th><th>Complaint</th><th>Treatment / Notes</th><th>Referral</th><th>Report</th></tr>
+  ${h.map(x=>`<tr><td>${x.date}</td><td>${esc((pt(x.pid)||{}).name||x.pid)}<div class="mini">${x.pid}</div></td><td>${deptIcon(x.dept)} ${x.dept}</td><td>${esc(x.doctor)}</td>
+   <td>${esc(x.complaint)}</td><td>${esc(x.notes)}</td><td>${esc(x.referral||'-')}</td><td>${esc(x.report||'-')}</td></tr>`).join('')}</table></div></div>`;
+};
+function histForm(){
+  openModal(`<h3 style="margin-top:0">📋 Add History Record</h3><div class="grid g2">
+   <div class="field"><label>Patient</label><select id="h_p">${DB.patients.map(p=>`<option value="${p.pid}">${esc(p.name)} (${p.pid})</option>`).join('')}</select></div>
+   <div class="field"><label>Date</label><input id="h_d" type="date" value="${today()}" /></div>
+   <div class="field"><label>Department</label><select id="h_dept">${DEPTS.map(d=>`<option>${d.name}</option>`).join('')}</select></div>
+   <div class="field"><label>Doctor</label><select id="h_doc">${DOCTORS.map(d=>`<option>${d.name}</option>`).join('')}</select></div>
+   <div class="field"><label>Complaint</label><input id="h_c" /></div>
+   <div class="field"><label>Treatment / Notes</label><input id="h_n" /></div>
+   <div class="field"><label>Referral</label><input id="h_r" placeholder="e.g. Yes → Cardiology" /></div>
+   <div class="field"><label>Report</label><input id="h_rp" placeholder="e.g. Blood Test" /></div></div>
+   <button class="btn" onclick="saveHist()">✅ Save</button> <button class="btn o" onclick="closeModal()">Cancel</button>`);
+}
+function saveHist(){
+  DB.history.push({id:uid('H'),pid:$('h_p').value,date:$('h_d').value,dept:$('h_dept').value,doctor:$('h_doc').value,
+   complaint:$('h_c').value,notes:$('h_n').value,referral:$('h_r').value,report:$('h_rp').value});
+  save();closeModal();toast('History record added');go('#history');
+}
+VIEWS.reports=()=>{
+  $('view').innerHTML=`<h1 class="page">Medical Reports</h1>
+  <p class="sub">Report metadata is stored locally for this prototype — no files are uploaded to a hospital server.</p>
+  <div class="card"><div class="h">Report Timeline <button class="btn s" onclick="reportForm('')">➕ Add Report</button></div>
+  ${repList(DB.reports.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(r=>({...r,dept:r.dept})))}</div>`;
+};
+function reportForm(pid){
+  openModal(`<h3 style="margin-top:0">📄 Add Report</h3><div class="grid g2">
+   <div class="field"><label>Patient</label><select id="r_p">${DB.patients.map(p=>`<option value="${p.pid}" ${p.pid===pid?'selected':''}>${esc(p.name)} (${p.pid})</option>`).join('')}</select></div>
+   <div class="field"><label>Report Type</label><select id="r_t">${['Blood Test','X-Ray','MRI','CT Scan','ECG','Prescription','Discharge Summary'].map(x=>`<option>${x}</option>`).join('')}</select></div>
+   <div class="field"><label>Report Name</label><input id="r_n" /></div>
+   <div class="field"><label>Date</label><input id="r_d" type="date" value="${today()}" /></div>
+   <div class="field"><label>Doctor</label><select id="r_doc">${DOCTORS.map(d=>`<option>${d.name}</option>`).join('')}</select></div>
+   <div class="field"><label>Department</label><select id="r_dept">${DEPTS.map(d=>`<option>${d.name}</option>`).join('')}</select></div>
+   <div class="field" style="grid-column:1/-1"><label>Summary</label><textarea id="r_s" rows="2"></textarea></div>
+   <div class="field" style="grid-column:1/-1"><label>Important Findings</label><textarea id="r_f" rows="2"></textarea></div></div>
+   <button class="btn" onclick="saveReport()">✅ Save Report</button> <button class="btn o" onclick="closeModal()">Cancel</button>`);
+}
+function saveReport(){
+  DB.reports.push({id:uid('RP'),pid:$('r_p').value,type:$('r_t').value,name:$('r_n').value||$('r_t').value,date:$('r_d').value,
+   doctor:$('r_doc').value,dept:$('r_dept').value,summary:$('r_s').value,findings:$('r_f').value});
+  save();closeModal();toast('Report added');go('#reports');
+}
+
+/* ---------- risk ---------- */
+function riskCard(pid){
+  const r=risk(pid),p=pt(pid);
+  return `<div class="card"><div class="h">Risk Score — ${esc(p.name)} ${riskTag(r.level)}</div>
+   <div style="font-size:42px;font-weight:800">${r.score}<span class="mini">/100</span></div>
+   <div class="bar"><i style="width:${r.score}%;background:${r.score>=75?'var(--dang)':r.score>=50?'var(--high)':r.score>=25?'var(--warn)':'var(--ok)'}"></i></div>
+   <div style="margin-top:14px">${r.lines.length?r.lines.map(l=>`<div class="kv"><span>${esc(l[0])}</span><b>${l[1]}</b></div>`).join(''):'<p class="mini">No contributing factors recorded.</p>'}
+   <div class="kv"><span><b>Total</b></span><b>${r.score}</b></div></div>
+   <div class="alert a-org" style="margin-top:12px"><p style="margin:0" class="mini">Prototype risk classification — not a medical diagnosis and not clinically validated. Thresholds: LOW &lt;25, MEDIUM 25–49, HIGH 50–74, CRITICAL 75+.</p></div></div>`;
+}
+VIEWS.risk=()=>{
+  const rows=DB.patients.map(p=>({p,r:risk(p.pid)})).sort((a,b)=>b.r.score-a.r.score);
+  $('view').innerHTML=`<h1 class="page">Risk Analysis</h1><p class="sub">Transparent prototype scoring — every point is explained.</p>
+  <div class="grid g6">${['LOW','MEDIUM','HIGH','CRITICAL'].map(l=>`<div class="card stat"><div class="v">${rows.filter(x=>x.r.level===l).length}</div><div class="l">${riskTag(l)}</div></div>`).join('')}</div>
+  <div class="card" style="margin-top:14px"><div class="h">Patient Risk Ranking</div>
+   <table><tr><th>Patient</th><th>Score</th><th>Level</th><th>Top factors</th><th></th></tr>
+   ${rows.map(x=>`<tr><td>${esc(x.p.name)}<div class="mini">${x.p.pid}</div></td><td><b>${x.r.score}</b></td><td>${riskTag(x.r.level)}</td>
+    <td class="mini">${x.r.lines.slice(0,3).map(l=>esc(l[0])+' '+l[1]).join(' · ')||'—'}</td>
+    <td><button class="btn s o" onclick="openModal(\`${riskCard(x.p.pid).replace(/`/g,'')}\`)">Explain</button></td></tr>`).join('')}</table></div>`;
+};
+
+/* ---------- doctor dashboard / doctors / departments ---------- */
+VIEWS.doctorboard=()=>{
+  const tA=DB.appointments.filter(a=>a.date===today());
+  $('view').innerHTML=`<h1 class="page">Doctor Dashboard</h1><p class="sub">Queue, AI assessments and pending referrals in one console.</p>
+  <div class="grid g6">
+    <div class="card stat"><div class="v">${tA.length}</div><div class="l">Today's appointments</div></div>
+    <div class="card stat"><div class="v">${DB.assessments.length}</div><div class="l">New AI assessments</div></div>
+    <div class="card stat"><div class="v">${DB.referrals.filter(r=>r.status==='Pending').length}</div><div class="l">Pending referrals</div></div>
+    <div class="card stat"><div class="v">${DB.reports.length}</div><div class="l">Reports available</div></div>
+  </div>
+  <div class="card" style="margin-top:14px"><div class="h">Patient Queue — ${today()}</div>
+   <div style="overflow:auto"><table><tr><th>Time</th><th>Patient ID</th><th>Name</th><th>Age</th><th>Main complaint</th><th>AI summary</th><th>Suggested dept</th><th>Risk</th><th></th></tr>
+   ${tA.map(a=>{const p=pt(a.pid)||{};const as=DB.assessments.filter(x=>x.pid===a.pid).slice(-1)[0];const r=risk(a.pid);
+    return `<tr><td>${a.time}</td><td>${a.pid}</td><td>${esc(p.name||'')}</td><td>${p.age||'—'}</td><td>${esc(p.symptoms||a.reason)}</td>
+     <td class="mini">${as?esc(as.cat+' · '+as.loc+' · '+as.severity+'/10 · '+as.urgency):'No AI assessment'}</td>
+     <td>${as?deptIcon(as.dept)+' '+as.dept:a.dept}</td><td>${riskTag(r.level)}</td>
+     <td><button class="btn s" onclick="go('#patient/${a.pid}')">Open Patient Record</button></td></tr>`}).join('')}</table></div></div>
+  <div class="card" style="margin-top:14px"><div class="h">Pending Referrals</div>${refTable(DB.referrals.filter(r=>r.status==='Pending'))}</div>
+  <div class="card" style="margin-top:14px"><div class="h">Recent AI Assessments</div>
+   ${DB.assessments.length?DB.assessments.slice(-3).reverse().map(a=>assessmentCard(a)).join(''):'<p class="mini">No assessments sent yet — run the AI Symptom Assistant and press “Send to Doctor”.</p>'}</div>`;
+};
+VIEWS.doctors=()=>{
+  $('view').innerHTML=`<h1 class="page">Doctors</h1><p class="sub">${DOCTORS.length} doctors across ${DEPTS.length} departments.</p>
+  <div class="grid g3">${DOCTORS.map(d=>{const apps=DB.appointments.filter(a=>a.doctor===d.name);
+   return `<div class="card stat"><div class="ic">${deptIcon(d.dept)}</div><b>${d.name}</b>
+   <div class="mini">${d.dept} · ${d.exp} years experience</div>
+   <div class="kv"><span>Available</span><b>${d.slots.join(', ')}</b></div>
+   <div class="kv"><span>Appointments</span><b>${apps.length}</b></div>
+   <div class="kv"><span>Referrals sent</span><b>${DB.referrals.filter(r=>r.fromDoc===d.name).length}</b></div>
+   <button class="btn s" style="margin-top:8px" onclick="apptForm('','${d.id}')">📅 Book with doctor</button></div>`}).join('')}</div>`;
+};
+VIEWS.departments=()=>{
+  $('view').innerHTML=`<h1 class="page">Departments</h1><p class="sub">Each department shares one centralized patient record.</p>
+  <div class="grid g3">${DEPTS.map(d=>`<div class="card stat"><div class="ic">${d.icon}</div><b>${d.name}</b>
+   <div class="mini">${d.desc}</div>
+   <div class="kv"><span>Doctors</span><b>${DOCTORS.filter(x=>x.dept===d.name).length}</b></div>
+   <div class="kv"><span>Appointments</span><b>${DB.appointments.filter(x=>x.dept===d.name).length}</b></div>
+   <div class="kv"><span>Referrals in</span><b>${DB.referrals.filter(x=>x.toDept===d.name).length}</b></div>
+   <div class="kv"><span>Referrals out</span><b>${DB.referrals.filter(x=>x.fromDept===d.name).length}</b></div></div>`).join('')}</div>`;
+};
+
+/* ---------- ADSA referral graph ---------- */
+VIEWS.graph=pid=>{
+  const nodes=DEPTS.map((d,i)=>{const ang=(i/DEPTS.length)*Math.PI*2-Math.PI/2;
+    return {id:d.name,icon:d.icon,x:480+300*Math.cos(ang),y:300+220*Math.sin(ang)}});
+  const edges={};
+  DB.referrals.filter(r=>!pid||r.pid===pid).forEach(r=>{const k=r.fromDept+'|'+r.toDept;edges[k]=(edges[k]||0)+1});
+  const N=n=>nodes.find(x=>x.id===n);
+  const svgEdges=Object.entries(edges).map(([k,w])=>{const [a,b]=k.split('|');const A=N(a),B=N(b);if(!A||!B)return'';
+    const mx=(A.x+B.x)/2,my=(A.y+B.y)/2;
+    return `<path d="M${A.x} ${A.y} Q ${mx+30} ${my-30} ${B.x} ${B.y}" stroke="url(#g1)" stroke-width="${1+w*1.6}" fill="none" marker-end="url(#ar)" opacity=".85"/>
+      <text x="${mx}" y="${my-8}" fill="#93a4c4" font-size="11" text-anchor="middle">${w} referral${w>1?'s':''}</text>`}).join('');
+  const svgNodes=nodes.map(n=>{const deg=Object.keys(edges).filter(k=>k.startsWith(n.id+'|')||k.endsWith('|'+n.id)).length;
+    return `<g class="gn" style="cursor:pointer"><circle cx="${n.x}" cy="${n.y}" r="${34+deg*3}" fill="#152238" stroke="${deg?'#19c3a3':'#243553'}" stroke-width="2"/>
+     <text x="${n.x}" y="${n.y+5}" text-anchor="middle" font-size="20">${n.icon}</text>
+     <text x="${n.x}" y="${n.y+54}" text-anchor="middle" fill="#e8eefc" font-size="11">${n.id}</text>
+     <text x="${n.x}" y="${n.y+68}" text-anchor="middle" fill="#93a4c4" font-size="10">degree ${deg}</text></g>`}).join('');
+  const chain=pid?DB.referrals.filter(r=>r.pid===pid).sort((a,b)=>a.date.localeCompare(b.date)):[];
+  $('view').innerHTML=`<h1 class="page">ADSA Referral Graph</h1>
+  <p class="sub">Nodes = departments / doctors · Edges = referral relationships · Edge weight = number of referrals.</p>
+  <div class="card"><div class="h">Network View
+    <select style="max-width:280px" onchange="VIEWS.graph(this.value)"><option value="">All patients (hospital network)</option>
+      ${DB.patients.map(p=>`<option value="${p.pid}" ${p.pid===pid?'selected':''}>${esc(p.name)} (${p.pid})</option>`).join('')}</select></div>
+   <div style="overflow:auto"><svg viewBox="0 0 960 620" width="100%" height="560">
+    <defs><linearGradient id="g1" x1="0" x2="1"><stop offset="0" stop-color="#19c3a3"/><stop offset="1" stop-color="#2f7bff"/></linearGradient>
+    <marker id="ar" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#2f7bff"/></marker></defs>
+    ${svgEdges}${svgNodes}</svg></div></div>
+  ${pid?`<div class="card" style="margin-top:14px"><div class="h">Patient Referral Path — ${esc((pt(pid)||{}).name||'')}</div>
+    <div class="tl"><div class="it"><div class="d">Start</div><b>Patient ${pid}</b></div>
+    ${chain.map(r=>`<div class="it"><div class="d">${r.date} · ${r.status}</div><b>${r.fromDoc} · ${r.fromDept} → ${r.toDoc} · ${r.toDept}</b><div class="mini">${esc(r.reason)}</div></div>`).join('')}</div></div>`:''}
+  <div class="card" style="margin-top:14px"><div class="h">How ADSA concepts are applied</div>
+   <div class="kv"><span>Graph G = (V, E)</span><b>V = departments/doctors, E = referral relationships</b></div>
+   <div class="kv"><span>Directed edges</span><b>Referral direction from source to target department</b></div>
+   <div class="kv"><span>Weighted edges</span><b>Number of referrals between two departments</b></div>
+   <div class="kv"><span>Degree of a node</span><b>How connected a department is in the referral network</b></div>
+   <div class="kv"><span>Path traversal</span><b>A patient's journey is a path through the graph (BFS/DFS style traversal)</b></div>
+   <div class="kv"><span>Adjacency list</span><b>Each department stores its outgoing referral targets</b></div></div>`;
+};
+
+/* ---------- analytics ---------- */
+const barChart=(data,color)=>{const max=Math.max(1,...data.map(d=>d[1]));
+ return data.map(d=>`<div style="margin-bottom:9px"><div class="kv" style="border:0;padding:2px 0"><span>${esc(d[0])}</span><b>${d[1]}</b></div>
+ <div class="bar"><i style="width:${d[1]/max*100}%;background:${color||'linear-gradient(90deg,var(--brand),var(--brand2))'}"></i></div></div>`).join('')};
+VIEWS.analytics=()=>{
+  const byDept=DEPTS.map(d=>[d.name,DB.patients.filter(p=>p.pref===d.name).length]);
+  const appDept=DEPTS.map(d=>[d.name,DB.appointments.filter(a=>a.dept===d.name).length]);
+  const refCount=DEPTS.map(d=>[d.name,DB.referrals.filter(r=>r.toDept===d.name).length]);
+  const riskDist=['LOW','MEDIUM','HIGH','CRITICAL'].map(l=>[l,DB.patients.filter(p=>risk(p.pid).level===l).length]);
+  const freq=DB.patients.map(p=>[p.name,DB.history.filter(h=>h.pid===p.pid).length]).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const pend=DB.referrals.filter(r=>r.status==='Pending').length,comp=DB.referrals.filter(r=>r.status==='Completed').length;
+  // donut
+  const total=Math.max(1,DB.referrals.length);const segs=[['Pending',pend,'#ff9f43'],['Completed',comp,'#28d07f'],
+   ['Accepted',DB.referrals.filter(r=>r.status==='Accepted').length,'#2f7bff'],['Follow-up',DB.referrals.filter(r=>r.status==='Follow-up Required').length,'#ff5468']];
+  let off=0;const circ=2*Math.PI*60;
+  const donut=segs.map(s=>{const len=s[1]/total*circ;const el=`<circle r="60" cx="90" cy="90" fill="none" stroke="${s[2]}" stroke-width="22"
+    stroke-dasharray="${len} ${circ-len}" stroke-dashoffset="${-off}" transform="rotate(-90 90 90)"/>`;off+=len;return el}).join('');
+  $('view').innerHTML=`<h1 class="page">Analytics</h1><p class="sub">Operational insight generated from centralized records.</p>
+  <div class="grid g2">
+   <div class="card"><div class="h">Patients by Department</div>${barChart(byDept)}</div>
+   <div class="card"><div class="h">Appointments by Department</div>${barChart(appDept,'linear-gradient(90deg,#2f7bff,#7fb0ff)')}</div>
+   <div class="card"><div class="h">Referrals Received by Department</div>${barChart(refCount,'linear-gradient(90deg,#ff9f43,#ffd08a)')}</div>
+   <div class="card"><div class="h">Risk Distribution</div>${barChart(riskDist,'linear-gradient(90deg,#ff5468,#ffb4cd)')}</div>
+   <div class="card"><div class="h">Frequent Visitors (visit count)</div>${barChart(freq,'linear-gradient(90deg,#c08bff,#8f6bff)')}</div>
+   <div class="card"><div class="h">Referral Status Mix</div>
+     <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+      <svg width="180" height="180">${donut}<text x="90" y="96" text-anchor="middle" fill="#e8eefc" font-size="22" font-weight="700">${DB.referrals.length}</text></svg>
+      <div>${segs.map(s=>`<div class="kv"><span><b style="color:${s[2]}">■</b> ${s[0]}</span><b>${s[1]}</b></div>`).join('')}</div>
+     </div></div>
+  </div>`;
+};
+
+/* ---------- subjects / ER / DMGT / about ---------- */
+const SUB={
+ JAVA:['☕','JAVA','Core application logic and hospital record management. Entity handling, validation rules, referral workflow logic and appointment scheduling logic would be implemented as Java services in a full build. In this prototype the same logic is mirrored in JavaScript functions such as registerPatient(), saveRef() and setStatus().'],
+ DBMS:['🗄️','DBMS','Centralized storage and retrieval of patient, doctor, appointment, referral, history, report and risk records. Primary keys, foreign keys, normalization and join queries remove the duplicate-record problem across departments. localStorage collections here map 1:1 to the ER diagram tables.'],
+ ADSA:['🔗','ADSA','The doctor/department referral network is modelled as a directed weighted graph G = (V, E). Nodes are departments/doctors, edges are referrals. Traversal gives a patient journey path; node degree shows the busiest referral hubs; adjacency lists store outgoing referrals.'],
+ PYTHON:['🐍','PYTHON','Patient history analysis and prototype risk scoring. Aggregates admissions, visit frequency, referral counts, pending follow-ups, age and chronic conditions into a transparent additive 0–100 score with explainable contributions.'],
+ OOPJ:['👨‍💻','OOPJ','Real-world entities are modelled as classes and objects: Patient, Doctor, Department, Appointment, Referral, Report, RiskScore. Encapsulation protects record fields, inheritance shares a common Person base, and polymorphism handles different report types under one interface.'],
+ DMGT:['📐','DMGT','Sets, relations, functions and graph theory formalize the system: P (patients), D (doctors), Dept (departments), A (appointments), R (referrals) with mappings and cardinality constraints between them.']
+};
+VIEWS.subjects=()=>{
+  $('view').innerHTML=`<h1 class="page">Academic Subject Integration</h1><p class="sub">Six subjects mapped onto working modules of this system.</p>
+  <div class="grid g3">${Object.keys(SUB).map(k=>`<div class="card stat" style="cursor:pointer" onclick="subModal('${k}')">
+   <div class="ic">${SUB[k][0]}</div><b>${SUB[k][1]}</b><div class="mini" style="margin-top:6px">${SUB[k][2].slice(0,80)}…</div>
+   <button class="btn s o" style="margin-top:10px">Read details</button></div>`).join('')}</div>`;
+};
+function subModal(k){openModal(`<h2 style="margin-top:0">${SUB[k][0]} ${SUB[k][1]}</h2><p>${SUB[k][2]}</p>
+ <p class="mini">Where to see it in this app: ${({JAVA:'Registration, referrals and appointment workflows',DBMS:'ER Diagram + every stored collection',ADSA:'Referral Graph page',PYTHON:'Risk Analysis page',OOPJ:'Entity structure behind every module',DMGT:'DMGT Model page'})[k]}</p>
+ <button class="btn o" onclick="closeModal()">Close</button>`)}
+
+VIEWS.er=()=>{
+  const E=[
+   ['PATIENT','patient_id (PK)','name, age, gender, phone, email, blood_group, allergies, conditions',120,40],
+   ['DEPARTMENT','dept_id (PK)','name, description',560,40],
+   ['DOCTOR','doctor_id (PK)','name, experience, dept_id (FK → DEPARTMENT)',560,190],
+   ['APPOINTMENT','appt_id (PK)','patient_id (FK), doctor_id (FK), dept_id (FK), date, time, status',120,190],
+   ['REFERRAL','referral_id (PK)','patient_id (FK), from_doctor (FK), to_doctor (FK), reason, priority, status',120,340],
+   ['PATIENT_HISTORY','history_id (PK)','patient_id (FK), dept_id (FK), doctor_id (FK), complaint, notes, date',560,340],
+   ['REPORT','report_id (PK)','patient_id (FK), doctor_id (FK), type, name, date, summary',120,490],
+   ['RISK_SCORE','risk_id (PK)','patient_id (FK), score, level, factors, generated_on',560,490]
+  ];
+  const rels=[['PATIENT','APPOINTMENT','1 : M'],['DOCTOR','APPOINTMENT','1 : M'],['DEPARTMENT','DOCTOR','1 : M'],
+   ['PATIENT','PATIENT_HISTORY','1 : M'],['PATIENT','REPORT','1 : M'],['DOCTOR','REFERRAL','1 : M'],
+   ['PATIENT','REFERRAL','1 : M'],['PATIENT','RISK_SCORE','1 : 1']];
+  $('view').innerHTML=`<h1 class="page">ER Diagram</h1><p class="sub">Entities, keys, relationships and cardinality of the centralized schema.</p>
+  <div class="card"><div style="overflow:auto"><svg viewBox="0 0 960 640" width="100%" height="620">
+   <defs><linearGradient id="eg" x1="0" x2="1"><stop offset="0" stop-color="#19c3a3"/><stop offset="1" stop-color="#2f7bff"/></linearGradient></defs>
+   ${E.map(e=>`<g><rect x="${e[3]}" y="${e[4]}" rx="12" width="300" height="110" fill="#152238" stroke="url(#eg)" stroke-width="2"/>
+    <rect x="${e[3]}" y="${e[4]}" rx="12" width="300" height="30" fill="rgba(25,195,163,.16)"/>
+    <text x="${e[3]+12}" y="${e[4]+20}" fill="#e8eefc" font-size="13" font-weight="700">${e[0]}</text>
+    <text x="${e[3]+12}" y="${e[4]+48}" fill="#7fead6" font-size="11">🔑 ${e[1]}</text>
+    ${e[2].split(', ').map((f,i)=>`<text x="${e[3]+12}" y="${e[4]+66+i*13}" fill="#93a4c4" font-size="10">• ${f}</text>`).join('')}</g>`).join('')}
+   <line x1="270" y1="150" x2="270" y2="190" stroke="#2f7bff" stroke-width="2"/><text x="278" y="174" fill="#93a4c4" font-size="10">1:M</text>
+   <line x1="560" y1="245" x2="420" y2="245" stroke="#2f7bff" stroke-width="2"/><text x="470" y="238" fill="#93a4c4" font-size="10">1:M</text>
+   <line x1="710" y1="150" x2="710" y2="190" stroke="#2f7bff" stroke-width="2"/><text x="718" y="174" fill="#93a4c4" font-size="10">1:M</text>
+   <line x1="270" y1="300" x2="270" y2="340" stroke="#19c3a3" stroke-width="2"/><text x="278" y="324" fill="#93a4c4" font-size="10">1:M</text>
+   <line x1="270" y1="450" x2="270" y2="490" stroke="#19c3a3" stroke-width="2"/><text x="278" y="474" fill="#93a4c4" font-size="10">1:M</text>
+   <line x1="420" y1="95" x2="560" y2="395" stroke="#19c3a3" stroke-width="1.5" stroke-dasharray="5 4"/><text x="480" y="250" fill="#93a4c4" font-size="10">1:M history</text>
+   <line x1="420" y1="95" x2="560" y2="545" stroke="#ff9f43" stroke-width="1.5" stroke-dasharray="5 4"/><text x="430" y="420" fill="#93a4c4" font-size="10">1:1 risk</text>
+  </svg></div></div>
+  <div class="card" style="margin-top:14px"><div class="h">Relationships &amp; Cardinality</div>
+   <table><tr><th>From</th><th>To</th><th>Cardinality</th><th>Meaning</th></tr>
+   ${rels.map(r=>`<tr><td><b>${r[0]}</b></td><td><b>${r[1]}</b></td><td><span class="tag t-info">${r[2]}</span></td>
+   <td class="mini">One ${r[0].toLowerCase()} relates to ${r[2]==='1 : 1'?'exactly one':'many'} ${r[1].toLowerCase()} record(s)</td></tr>`).join('')}</table></div>`;
+};
+
+VIEWS.dmgt=()=>{
+  $('view').innerHTML=`<h1 class="page">DMGT Mathematical Representation</h1>
+  <p class="sub">Discrete mathematics formalization of the hospital record model.</p>
+  <div class="grid g2">
+  <div class="card"><div class="h">Sets</div>
+   ${[['P','Set of Patients','|P| = '+DB.patients.length],['D','Set of Doctors','|D| = '+DOCTORS.length],
+      ['Dp','Set of Departments','|Dp| = '+DEPTS.length],['A','Set of Appointments','|A| = '+DB.appointments.length],
+      ['R','Set of Referrals','|R| = '+DB.referrals.length],['H','Set of History records','|H| = '+DB.history.length],
+      ['Rep','Set of Reports','|Rep| = '+DB.reports.length]]
+    .map(s=>`<div class="kv"><span><b>${s[0]}</b> — ${s[1]}</span><b>${s[2]}</b></div>`).join('')}</div>
+  <div class="card"><div class="h">Relations &amp; Functions</div>
+   <div class="kv"><span>Appointment relation</span><b>A ⊆ P × D × Dp × T</b></div>
+   <div class="kv"><span>Referral relation</span><b>R ⊆ P × D × D</b></div>
+   <div class="kv"><span>Doctor→Department map</span><b>f : D → Dp (total function)</b></div>
+   <div class="kv"><span>Patient→History map</span><b>h : P → 𝒫(H) (power set)</b></div>
+   <div class="kv"><span>Risk function</span><b>risk : P → [0,100] ⊂ ℤ</b></div>
+   <div class="kv"><span>Triage mapping</span><b>t : S → Dp, S = set of symptom patterns</b></div>
+  </div>
+  <div class="card"><div class="h">Graph Theory</div>
+   <div class="kv"><span>Referral graph</span><b>G = (V, E), V = D ∪ Dp</b></div>
+   <div class="kv"><span>Edge</span><b>e = (d₁, d₂) ∈ E ⟺ ∃ r ∈ R referring d₁ → d₂</b></div>
+   <div class="kv"><span>Weight</span><b>w(e) = number of referrals along e</b></div>
+   <div class="kv"><span>Patient path</span><b>π(p) = ⟨v₀, v₁, …, vₙ⟩ ordered by date</b></div>
+   <div class="kv"><span>Out-degree</span><b>deg⁺(v) = referrals initiated by v</b></div>
+  </div>
+  <div class="card"><div class="h">Properties</div>
+   <div class="kv"><span>Reflexive?</span><b>No — a department does not refer to itself</b></div>
+   <div class="kv"><span>Symmetric?</span><b>No — referral direction matters (directed graph)</b></div>
+   <div class="kv"><span>Transitive closure</span><b>Gives every department reachable through a referral chain</b></div>
+   <div class="kv"><span>Cardinality rule</span><b>∀p ∈ P : |appointments(p)| ≥ 0, one PID is unique (injective)</b></div>
+  </div></div>`;
+};
+
+VIEWS.about=()=>{
+  $('view').innerHTML=`<h1 class="page">About the System</h1>
+  <div class="grid g2">
+   <div class="card"><div class="h">The Problem</div>
+    <p>Departments such as General Medicine, Cardiology, Neurology, Orthopedics, Pediatrics, Dermatology, ENT and Gynecology often maintain patient information separately. Staff then struggle to quickly identify previous treatments, appointments, doctors, departments, referral history, reports and repeated visits.</p></div>
+   <div class="card"><div class="h">The Solution</div>
+    <p>A centralized Hospital Records &amp; Referral System connecting:</p>
+    <p class="mini">Patient → Symptoms → AI Symptom Guidance → Doctor → Department → Appointment → Referral → Medical History → Reports → Risk Score → Staff Dashboard</p>
+    <p>One patient identity, one timeline, visible to every department.</p></div>
+   <div class="card"><div class="h">Safety Statement</div>
+    <div class="alert a-org"><p style="margin:0">This is an academic prototype. The AI assistant provides preliminary guidance only and does not diagnose disease or replace professional medical care. Risk scores are illustrative and not clinically validated. In an emergency, contact local emergency services.</p></div></div>
+   <div class="card"><div class="h">Technical Notes</div>
+    <div class="kv"><span>Architecture</span><b>Single HTML file — HTML + CSS + JS</b></div>
+    <div class="kv"><span>Persistence</span><b>Browser localStorage (key: medilink_v1)</b></div>
+    <div class="kv"><span>Dependencies</span><b>None — runs offline / Live Server</b></div>
+    <div class="kv"><span>Visuals</span><b>Inline SVG charts, graph and ER diagram</b></div>
+    <button class="btn r s" style="margin-top:12px" onclick="reset()">♻️ Reset demo data</button></div>
+  </div>`;
+};
+
+/* ---------- global search & notifications ---------- */
+function globalSearch(q){
+  q=q.trim().toLowerCase(); if(q.length<2){if(location.hash.includes('search'))go('#patients');return}
+  const res=DB.patients.filter(p=>[p.pid,p.name,p.phone,p.pref].join(' ').toLowerCase().includes(q))
+    .concat(DB.patients.filter(p=>DB.appointments.some(a=>a.pid===p.pid&&(a.doctor+a.dept).toLowerCase().includes(q))
+      ||DB.referrals.some(r=>r.pid===p.pid&&(r.toDoc+r.toDept+r.fromDoc+r.fromDept).toLowerCase().includes(q))));
+  const uniq=[...new Map(res.map(p=>[p.pid,p])).values()];
+  skipHash=true;location.hash='#search';
+  $('view').innerHTML=`<h1 class="page">Search results for “${esc(q)}”</h1>
+   <p class="sub">${uniq.length} matching patient record(s) — centralized lookup replaces searching separate department files.</p>
+   ${uniq.map(p=>{const r=risk(p.pid);return `<div class="card" style="margin-bottom:12px"><div class="h">${esc(p.name)} · ${p.pid} ${riskTag(r.level)}
+    <button class="btn s" onclick="go('#patient/${p.pid}')">Open full record</button></div>
+    <div class="grid g3">
+     <div><div class="mini">Profile</div>${p.age} yrs · ${p.gender} · ${p.blood}<div class="mini">${esc(p.phone)} · ${esc(p.email)}</div></div>
+     <div><div class="mini">Previous visits</div>${DB.history.filter(h=>h.pid===p.pid).length} · ${[...new Set(DB.history.filter(h=>h.pid===p.pid).map(h=>h.dept))].join(', ')||'—'}</div>
+     <div><div class="mini">Reports</div>${DB.reports.filter(x=>x.pid===p.pid).map(x=>x.type).join(', ')||'—'}</div>
+     <div><div class="mini">Referrals</div>${DB.referrals.filter(x=>x.pid===p.pid).map(x=>x.fromDept+'→'+x.toDept).join(', ')||'—'}</div>
+     <div><div class="mini">Appointments</div>${DB.appointments.filter(x=>x.pid===p.pid).map(x=>x.date+' '+x.dept).join(', ')||'—'}</div>
+     <div><div class="mini">AI assessments</div>${DB.assessments.filter(x=>x.pid===p.pid).length}</div>
+    </div></div>`}).join('')||'<div class="card">No matching records.</div>'}`;
+}
+VIEWS.search=()=>globalSearch($('gsearch').value);
+function showNotifs(){openModal(`<h3 style="margin-top:0">🔔 Notifications</h3>
+ ${DB.notifs.map(n=>`<div class="kv"><span>${n.d}</span><b style="text-align:right">${esc(n.t)}</b></div>`).join('')}
+ <button class="btn o" style="margin-top:12px" onclick="closeModal()">Close</button>`)}
+
+/* ---------- boot ---------- */
+function boot(){
+  buildNav();
+  $('today').innerHTML=new Date().toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  const urgent=DB.assessments.filter(a=>a.urgency==='URGENT').length
+    + DB.patients.filter(p=>risk(p.pid).level==='CRITICAL').length
+    + DB.referrals.filter(r=>r.priority==='High'&&r.status==='Pending').length;
+  $('emgCount').textContent=urgent;
+  go(location.hash||'#dashboard');
+}
+const _go=go;
+window.go=h=>{const [id,arg]=h.replace('#','').split('/');location.hash=h;
+  document.querySelectorAll('.nav a').forEach(a=>a.classList.remove('on'));
+  const n=$('nav-'+id); if(n)n.classList.add('on');
+  $('side').classList.remove('open');
+  (VIEWS[id]||VIEWS.dashboard)(arg);window.scrollTo(0,0)};
+boot();
+</script>
+</body>
+</html>
