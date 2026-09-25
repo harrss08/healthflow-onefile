@@ -121,6 +121,29 @@ tr:hover td{background:rgba(255,255,255,.03)}
  .burger{display:grid}
  .wrap{padding:14px}
 }
+
+/* Language, voice & video additions */
+.langbar{display:flex;gap:6px;align-items:center}
+.lbtn{padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:#101c2e;color:var(--txt);cursor:pointer;font-size:13px;font-weight:600}
+.lbtn.on{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#04121f;border-color:transparent}
+.lbtn.stop{background:var(--dang);color:#fff;border-color:transparent}
+.voicebar{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:150;display:none;gap:10px;align-items:center;background:var(--card2);border:1px solid var(--brand);padding:10px 14px;border-radius:999px;box-shadow:var(--sh)}
+.voicebar.on{display:flex}
+.voicebar .pulse{width:10px;height:10px;border-radius:50%;background:var(--ok);animation:pl 1s infinite}
+@keyframes pl{50%{opacity:.25}}
+.goog-te-banner-frame,.skiptranslate iframe,#goog-gt-tt{display:none!important}
+body{top:0!important}
+#gtwrap{display:none}
+.vgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.vbox{background:#070c15;border:1px solid var(--line);border-radius:16px;aspect-ratio:16/10;overflow:hidden;position:relative;display:grid;place-items:center;color:var(--mut)}
+.vbox video{width:100%;height:100%;object-fit:cover}
+.vbox .lbl{position:absolute;left:10px;bottom:10px;background:rgba(0,0,0,.55);padding:4px 10px;border-radius:999px;font-size:12px;color:#fff}
+.vctl{display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+.vctl button{width:58px;height:58px;border-radius:50%;border:0;font-size:22px;cursor:pointer;background:var(--card2);color:var(--txt)}
+.vctl button.end{background:var(--dang)}
+.vctl button.off{background:#3a2330}
+.jitsi{width:100%;height:560px;border:0;border-radius:16px;background:#000}
+@media(max-width:900px){.vgrid{grid-template-columns:1fr}.langbar .lt{display:none}}
 </style>
 </head>
 <body>
@@ -140,6 +163,12 @@ tr:hover td{background:rgba(255,255,255,.03)}
         <span>🔍</span>
         <input id="gsearch" placeholder="Search patient ID, name, phone, doctor, department…" oninput="globalSearch(this.value)" />
       </div>
+      <div class="langbar" title="Language / భాష">
+        <button class="lbtn on" id="lang-en" onclick="setLang('en')">English</button>
+        <button class="lbtn" id="lang-te" onclick="setLang('te')">తెలుగు</button>
+        <button class="lbtn" onclick="readPage()" title="Read this page aloud">🔊 <span class="lt">Listen</span></button>
+        <button class="lbtn stop" onclick="stopVoice()" title="Stop voice">⏹ <span class="lt">Stop</span></button>
+      </div>
       <div class="emg" id="emgInd">🚨 Emergency: <b id="emgCount">0</b></div>
       <div class="mini" id="today"></div>
       <div class="tbtn" onclick="showNotifs()">🔔<i class="dot"></i></div>
@@ -151,6 +180,8 @@ tr:hover td{background:rgba(255,255,255,.03)}
 
 <div class="modal" id="modal" onclick="if(event.target===this)closeModal()"><div class="box" id="modalBox"></div></div>
 <div class="toast" id="toast"></div>
+<div class="voicebar notranslate" id="voicebar"><i class="pulse"></i><span id="vtxt">Speaking…</span><button class="lbtn stop" onclick="stopVoice()">⏹ Stop / ఆపు</button></div>
+<div id="gtwrap"><div id="google_translate_element"></div></div>
 
 <script>
 /* ============================================================
@@ -281,6 +312,7 @@ const PAGES=[
  ['history','📋','Medical History'],
  ['reports','📄','Reports'],
  ['risk','⚠️','Risk Analysis'],
+ ['videocall','📹','Video Call Doctor'],
  ['doctorboard','👨‍⚕️','Doctor Dashboard','PEOPLE'],
  ['doctors','🧑‍⚕️','Doctors'],
  ['departments','🏥','Departments'],
@@ -299,6 +331,7 @@ function go(hash){
   const id=(hash||'#dashboard').replace('#','').split('/')[0];
   const arg=(hash||'').split('/')[1];
   location.hash=hash;
+  stopVoice(); if(id!=='videocall') endCall(true);
   document.querySelectorAll('.nav a').forEach(a=>a.classList.remove('on'));
   const n=$('nav-'+id); if(n)n.classList.add('on');
   $('side').classList.remove('open');
@@ -1064,5 +1097,94 @@ window.go=h=>{const [id,arg]=h.replace('#','').split('/');location.hash=h;
   (VIEWS[id]||VIEWS.dashboard)(arg);window.scrollTo(0,0)};
 boot();
 </script>
+
+<script>
+/* ---------- Language: whole-site Telugu / English ---------- */
+function setCookie(v){const d=location.hostname;document.cookie='googtrans='+v+';path=/';if(d)document.cookie='googtrans='+v+';path=/;domain='+d;}
+function curLang(){return localStorage.getItem('medilink_lang')||'en'}
+function markLang(l){['en','te'].forEach(x=>{const b=document.getElementById('lang-'+x);if(b)b.classList.toggle('on',x===l)});document.documentElement.lang=l}
+function setLang(l){
+  stopVoice();localStorage.setItem('medilink_lang',l);markLang(l);
+  const sel=document.querySelector('.goog-te-combo');
+  if(l==='en'){setCookie('/en/en');if(sel){sel.value='en';sel.dispatchEvent(new Event('change'))}setTimeout(()=>location.reload(),150);return}
+  setCookie('/en/te');
+  if(sel){sel.value='te';sel.dispatchEvent(new Event('change'))}else location.reload();
+  toast('తెలుగు భాష ఎంచుకోబడింది');
+}
+function googleTranslateElementInit(){new google.translate.TranslateElement({pageLanguage:'en',includedLanguages:'en,te',autoDisplay:false},'google_translate_element')}
+markLang(curLang()); if(curLang()==='te') setCookie('/en/te');
+
+/* ---------- Voice: read aloud with a working Stop ---------- */
+let speaking=false;
+function stopVoice(){
+  speaking=false;
+  try{window.speechSynthesis&&speechSynthesis.cancel()}catch(e){}
+  const vb=document.getElementById('voicebar');if(vb)vb.classList.remove('on');
+}
+function speak(text){
+  if(!('speechSynthesis' in window)){toast('Voice not supported in this browser');return}
+  stopVoice();
+  const lang=curLang()==='te'?'te-IN':'en-IN';
+  const voices=speechSynthesis.getVoices();
+  const v=voices.find(x=>x.lang===lang)||voices.find(x=>x.lang.startsWith(lang.slice(0,2)));
+  if(lang==='te-IN'&&!v)toast('Telugu voice not installed on this device — using default voice');
+  const parts=text.replace(/\s+/g,' ').match(/[^.!?।\n]{1,220}[.!?।]?/g)||[];
+  speaking=true;document.getElementById('voicebar').classList.add('on');
+  document.getElementById('vtxt').textContent=lang==='te-IN'?'చదువుతోంది…':'Speaking…';
+  parts.forEach((t,i)=>{const u=new SpeechSynthesisUtterance(t.trim());u.lang=lang;if(v)u.voice=v;u.rate=.95;
+    if(i===parts.length-1)u.onend=()=>{if(speaking)stopVoice()};speechSynthesis.speak(u)});
+}
+function readPage(){const el=document.getElementById('view');speak(el?el.innerText.slice(0,4000):'')}
+if('speechSynthesis' in window)speechSynthesis.onvoiceschanged=()=>{};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')stopVoice()});
+window.addEventListener('beforeunload',stopVoice);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stopVoice()});
+
+/* ---------- Video call with doctor ---------- */
+let camStream=null;
+function endCall(silent){
+  if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null}
+  const j=document.getElementById('jitsiBox');if(j)j.innerHTML='';
+  if(!silent)toast('Call ended / కాల్ ముగిసింది');
+}
+VIEWS.videocall=function(){
+  const docs=DOCTORS.map(d=>`<option value="${d.id}">${d.name} — ${d.dept}</option>`).join('');
+  $('view').innerHTML=`<h1 class="page">📹 Video Call a Doctor</h1>
+  <p class="sub">Talk to a doctor face to face from home. Press the big green button to start.</p>
+  <div class="card" style="margin-bottom:14px">
+    <div class="row" style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">
+      <label style="flex:1;min-width:220px">Choose doctor<br><select id="vcDoc" style="width:100%">${docs}</select></label>
+      <label style="flex:1;min-width:180px">Your name<br><input id="vcName" placeholder="Patient name" style="width:100%"></label>
+      <button class="btn" style="background:var(--ok);color:#04241d;font-size:16px;padding:12px 20px" onclick="startCall()">📞 Start Video Call</button>
+      <button class="btn" onclick="testCam()">🎥 Test my camera</button>
+    </div>
+    <p class="mini" style="margin-top:10px">Share the room link with the doctor — both people join the same room. Allow camera and microphone when the browser asks.</p>
+  </div>
+  <div id="camTest"></div>
+  <div id="jitsiBox"></div>`;
+};
+async function testCam(){
+  endCall(true);
+  const box=$('camTest');
+  box.innerHTML=`<div class="vgrid"><div class="vbox"><video id="myVid" autoplay muted playsinline></video><span class="lbl">You</span></div>
+   <div class="vbox"><div>👨‍⚕️<br>Doctor will appear here</div><span class="lbl">Doctor</span></div></div>
+   <div class="vctl"><button id="bMic" onclick="togTrack('audio',this)" title="Mute">🎤</button><button id="bCam" onclick="togTrack('video',this)" title="Camera">📷</button><button class="end" onclick="endCall();$('camTest').innerHTML=''" title="End">📞</button></div>`;
+  try{camStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});$('myVid').srcObject=camStream}
+  catch(e){box.innerHTML='<div class="alert a-org">Camera or microphone permission was blocked. Please allow it in your browser and try again.</div>'}
+}
+function togTrack(kind,btn){if(!camStream)return;camStream.getTracks().filter(t=>t.kind===kind).forEach(t=>{t.enabled=!t.enabled;btn.classList.toggle('off',!t.enabled)})}
+function startCall(){
+  endCall(true);$('camTest').innerHTML='';
+  const d=DOCTORS.find(x=>x.id===$('vcDoc').value);const nm=encodeURIComponent($('vcName').value||'Patient');
+  const room='MediLink-'+d.id+'-'+new Date().toISOString().slice(0,10).replace(/-/g,'');
+  const url='https://meet.jit.si/'+room;
+  $('jitsiBox').innerHTML=`<div class="card"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+   <b>In call with ${d.name}</b><span class="mini">Room link: <a href="${url}" target="_blank">${url}</a></span>
+   <button class="btn" style="background:var(--dang);color:#fff" onclick="endCall()">📞 End Call</button></div>
+   <iframe class="jitsi" allow="camera; microphone; fullscreen; display-capture; autoplay" src="${url}#userInfo.displayName=%22${nm}%22&config.prejoinPageEnabled=false"></iframe></div>`;
+  toast('Joining video call…');
+}
+</script>
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
 </html>
