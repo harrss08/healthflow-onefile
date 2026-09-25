@@ -331,7 +331,7 @@ function go(hash){
   const id=(hash||'#dashboard').replace('#','').split('/')[0];
   const arg=(hash||'').split('/')[1];
   location.hash=hash;
-  stopVoice(); if(id!=='videocall') endCall(true);
+  if(window.stopVoice)stopVoice(); if(window.endCall&&id!=='videocall') endCall(true);
   document.querySelectorAll('.nav a').forEach(a=>a.classList.remove('on'));
   const n=$('nav-'+id); if(n)n.classList.add('on');
   $('side').classList.remove('open');
@@ -1087,7 +1087,7 @@ function boot(){
     + DB.patients.filter(p=>risk(p.pid).level==='CRITICAL').length
     + DB.referrals.filter(r=>r.priority==='High'&&r.status==='Pending').length;
   $('emgCount').textContent=urgent;
-  go(location.hash||'#dashboard');
+  setTimeout(()=>go(location.hash||'#dashboard'),0);
 }
 const _go=go;
 window.go=h=>{const [id,arg]=h.replace('#','').split('/');location.hash=h;

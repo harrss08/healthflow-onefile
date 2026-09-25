@@ -27,6 +27,7 @@ function Index() {
     <iframe
       src="/hospital/index.html"
       title="MediLink Hospital Records & Intelligent Referral System"
+      allow="camera; microphone; fullscreen; display-capture; autoplay"
       style={{ border: 0, width: "100%", height: "100vh", display: "block" }}
     />
   );
