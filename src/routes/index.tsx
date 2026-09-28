@@ -83,7 +83,7 @@ function AuthScreen() {
       if (error) setMsg({ t: "err", m: error.message });
       else {
         setStep("code");
-        setMsg({ t: "ok", m: `Verification code sent to ${email}` });
+        setMsg({ t: "ok", m: `Confirmation email sent to ${email}` });
       }
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -91,7 +91,7 @@ function AuthScreen() {
         if (/confirm/i.test(error.message)) {
           await supabase.auth.resend({ type: "signup", email });
           setStep("code");
-          setMsg({ t: "ok", m: `Please verify your email. Code sent to ${email}` });
+          setMsg({ t: "ok", m: `Please confirm your email. We re-sent the link to ${email}` });
         } else setMsg({ t: "err", m: error.message });
       }
     }
@@ -108,7 +108,7 @@ function AuthScreen() {
 
   async function resend() {
     const { error } = await supabase.auth.resend({ type: "signup", email });
-    setMsg(error ? { t: "err", m: error.message } : { t: "ok", m: "New code sent" });
+    setMsg(error ? { t: "err", m: error.message } : { t: "ok", m: "Email sent again" });
   }
 
   return (
@@ -141,27 +141,19 @@ function AuthScreen() {
                 <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
                 <input type="password" placeholder="Password (min 6)" minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} required />
                 <button className="ml-primary" disabled={busy}>
-                  {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Sign up & send code"}
+                  {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Sign up"}
                 </button>
               </form>
             </>
           ) : (
             <>
-              <h1>Enter verification code</h1>
-              <p className="ml-mut">Check your email inbox for the code (or tap the link in the email).</p>
-              <form onSubmit={verify}>
-                <input
-                  inputMode="numeric"
-                  placeholder="6-digit code"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  className="ml-code"
-                  required
-                />
-                <button className="ml-primary" disabled={busy}>{busy ? "Verifying…" : "Verify"}</button>
-              </form>
+              <h1>Confirm it's you</h1>
+              <p className="ml-mut">
+                We sent an email to <b>{email}</b>. Open it and tap the link to confirm it's you — you'll be signed in automatically.
+              </p>
+              <p className="ml-mut">Didn't sign up? Just ignore the email and nothing will happen.</p>
               <div className="ml-row">
-                <button className="ml-link" onClick={resend}>Resend code</button>
+                <button className="ml-link" onClick={resend}>Resend email</button>
                 <button className="ml-link" onClick={() => { setStep("form"); setMsg(null); }}>Back</button>
               </div>
             </>
